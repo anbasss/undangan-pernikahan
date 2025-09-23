@@ -1,26 +1,66 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Nautical palette */
+  --blue-deep: #0b2a4a; /* navy/ocean */
+  --blue-sea: #1f355e; /* deep sea */
+  --ivory: #f7f3ea; /* ivory white */
+  --gold: #d9c499; /* warm gold */
+  --gold-bright: #f3d27c; /* brighter highlight */
+
+  --background: var(--blue-deep);
+  --foreground: var(--ivory);
+
+  --font-display-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-body-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+
+  --ocean-grad: radial-gradient(1200px 400px at 50% 100%, rgba(16,53,95,0.8), rgba(11,42,74,1)), linear-gradient(#0b2a4a,#102b4f);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* tailwind tokens removed; using CSS vars directly */
+
+/* keep single theme regardless of color scheme */
+
+body { background: var(--background); color: var(--foreground); font-family: var(--font-body-sans); }
+
+/* Utilities */
+.bg-ocean { background-image: var(--ocean-grad); }
+.text-ivory { color: var(--ivory); }
+
+/* Foil shimmer effect for names */
+.foil-shimmer {
+  background: linear-gradient(100deg, #caa969 10%, #f3d27c 30%, #fff6d6 45%, #caa969 60%, #f3d27c 85%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+
+/* Parchment scroll */
+.parchment { background: radial-gradient(circle at 30% 20%, #fff8e8, #f0e2c2); box-shadow: 0 10px 30px rgba(0,0,0,0.2) inset, 0 8px 20px rgba(0,0,0,0.2); border: 2px solid #e6d3a1; }
+.nautical-card { background: rgba(255,255,255,0.6); padding: 12px; border-radius: 10px; border: 1px dashed #caa969; }
+
+/* Rope borders */
+.rope-card { position: relative; padding: 16px; border-radius: 16px; background: rgba(7,25,49,0.6); }
+.rope-card::before { content: ""; position: absolute; inset: -6px; border: 6px solid transparent; border-image: linear-gradient(45deg,#caa969,#f3d27c,#caa969) 1; border-radius: 20px; pointer-events: none; }
+
+/* Compass background */
+.compass { width: 520px; height: 520px; border-radius: 999px; background:
+  radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1), transparent 60%),
+  conic-gradient(from 45deg, rgba(255,255,255,0.15) 0 90deg, transparent 90deg 180deg, rgba(255,255,255,0.15) 180deg 270deg, transparent 270deg 360deg),
+  radial-gradient(circle at 50% 50%, rgba(255,255,255,0.12), rgba(255,255,255,0.05));
+  border: 1px solid rgba(255,255,255,0.2);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
+/* Porthole frame */
+.porthole { width: min(90%, 520px); aspect-ratio: 1; border-radius: 999px; overflow: hidden; position: relative; box-shadow: 0 0 0 10px #b9935a, 0 0 0 14px #7a623a, 0 25px 40px rgba(0,0,0,0.4); }
+.nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.4); color: white; width: 40px; height: 40px; border-radius: 999px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,0.3); }
+
+/* Nautical map frame */
+.nautical-frame { position: relative; background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); border: 8px solid transparent; border-image: linear-gradient(45deg,#7a623a,#b9935a,#e0c890,#b9935a) 1; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+
+/* Wheel countdown */
+.wheel { width: 320px; aspect-ratio: 1; border-radius: 999px; position: relative; border: 12px solid #7a623a; box-shadow: 0 8px 18px rgba(0,0,0,0.5); }
+.wheel::before, .wheel::after { content: ""; position: absolute; inset: -22px; border: 10px dashed #b9935a; border-radius: 999px; }
+.wheel-inner { position: absolute; inset: 18px; border-radius: 999px; background: rgba(7,25,49,0.7); display: grid; place-items: center; }
+

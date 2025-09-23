@@ -1,103 +1,71 @@
-import Image from "next/image";
+"use client";
+import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
+
+const HeroScene = dynamic(() => import("./components/HeroScene"), { ssr: false });
+const StorySection = dynamic(() => import("./components/StorySection"));
+const EventDetails = dynamic(() => import("./components/EventDetails"));
+const MapSection = dynamic(() => import("./components/MapSection"));
+const RSVPForm = dynamic(() => import("./components/RSVPForm"));
+const Gallery = dynamic(() => import("./components/Gallery"));
+const Countdown = dynamic(() => import("./components/Countdown"), { ssr: false });
+const AudioPlayer = dynamic(() => import("./components/AudioPlayer"));
+const ShareBar = dynamic(() => import("./components/ShareBar"), { ssr: false });
+const IntroOverlay = dynamic(() => import("./components/IntroOverlay"), { ssr: false });
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const [autoPlayMusic, setAutoPlayMusic] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReduceMotion(media.matches);
+    update();
+    media.addEventListener("change", update);
+    const onOpen = (e: any) => setAutoPlayMusic(Boolean(e.detail?.playMusic));
+    window.addEventListener("invitation-open", onOpen as any);
+    return () => { media.removeEventListener("change", update); window.removeEventListener("invitation-open", onOpen as any); };
+  }, []);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+  return (
+    <main className="min-h-screen bg-ocean text-foreground font-[var(--font-body-sans)]">
+      <a href="#content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-white/90 text-blue-900 px-3 py-2 rounded">
+        Skip to content
+      </a>
+      <header aria-label="Undangan Pernikahan" className="relative">
+  <IntroOverlay coupleNames={{ bride: "Andi B. Patau", groom: "Andi Amparita" }} />
+  <HeroScene reduceMotion={reduceMotion} coupleNames={{ bride: "Andi B. Patau", groom: "Andi Amparita" }} date="2025-11-09T10:00:00" />
+        <AudioPlayer />
+        <ShareBar />
+      </header>
+      <div id="content" className="space-y-24 md:space-y-32">
+        <section aria-labelledby="cerita" className="px-4 md:px-8">
+          <h2 id="cerita" className="sr-only">Cerita Pasangan</h2>
+          <StorySection />
+        </section>
+        <section aria-labelledby="detail" className="px-4 md:px-8">
+          <h2 id="detail" className="sr-only">Detail Acara</h2>
+          <EventDetails />
+        </section>
+        <section aria-labelledby="countdown" className="px-4 md:px-8">
+          <h2 id="countdown" className="sr-only">Hitung Mundur</h2>
+          <Countdown targetDate={new Date("2025-11-09T10:00:00")} />
+        </section>
+        <section aria-labelledby="map" className="px-4 md:px-8">
+          <h2 id="map" className="sr-only">Peta Lokasi</h2>
+          <MapSection />
+        </section>
+        <section aria-labelledby="gallery" className="px-4 md:px-8">
+          <h2 id="gallery" className="sr-only">Galeri Foto</h2>
+          <Gallery />
+        </section>
+        <section aria-labelledby="rsvp" className="px-4 md:px-8 pb-20">
+          <h2 id="rsvp" className="sr-only">RSVP</h2>
+          <RSVPForm />
+        </section>
+      </div>
+      <footer className="text-center py-8 text-sm text-blue-100/80">
+  © 2025 Andi B. Patau & Andi Amparita — Berlayar bersama selamanya
       </footer>
-    </div>
+    </main>
   );
 }
