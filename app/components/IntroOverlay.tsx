@@ -14,7 +14,17 @@ export default function IntroOverlay({ coupleNames }: { coupleNames: { bride: st
     // Run only on client
     setMounted(true);
     const opened = typeof window !== 'undefined' ? sessionStorage.getItem("inv-opened") : null;
-    if (opened === "1") setShow(false);
+    // Always show overlay on fresh load unless explicitly hidden by user action
+    if (opened === "1") {
+      // Check if this might be a page refresh - if so, show overlay again
+      const isRefresh = !document.referrer || document.referrer.includes(window.location.host);
+      if (isRefresh) {
+        sessionStorage.removeItem("inv-opened");
+        setShow(true);
+      } else {
+        setShow(false);
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -23,14 +33,10 @@ export default function IntroOverlay({ coupleNames }: { coupleNames: { bride: st
   }, [params]);
 
   function openInvitation() {
-    // Dispatch first so listeners can prepare (e.g., music)
+    // Dispatch event untuk animasi kapal dan show couple names
     const ev = new CustomEvent("invitation-open", { detail: { playMusic, inviteeName: name } });
     window.dispatchEvent(ev);
-    // Smooth scroll to content after brief delay
-    setTimeout(() => {
-      document.getElementById("content")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 150);
-    // Then animate out
+    // Hilangkan overlay dengan animasi smooth
     setShow(false);
     sessionStorage.setItem("inv-opened", "1");
   }
@@ -40,7 +46,7 @@ export default function IntroOverlay({ coupleNames }: { coupleNames: { bride: st
     <AnimatePresence>
       {show && (
         <motion.div
-          className="fixed inset-0 z-[100] grid place-items-center bg-gradient-to-b from-[#081b2f] to-[#0b2a4a]"
+          className="fixed inset-0 z-[100] grid place-items-center bg-transparent"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -53,7 +59,7 @@ export default function IntroOverlay({ coupleNames }: { coupleNames: { bride: st
             transition={{ type: "spring", stiffness: 140, damping: 18 }}
           >
             <div aria-hidden className="absolute inset-0 -z-10 rounded-[28px] border-[10px]" style={{ borderImage: "linear-gradient(45deg,#caa969,#f3d27c,#caa969) 1" }} />
-            <div className="rounded-[18px] bg-blue-900/40 backdrop-blur px-6 py-8 border border-blue-200/20 shadow-2xl">
+            <div className="rounded-[18px] bg-blue-900/60 backdrop-blur-md px-6 py-8 border border-blue-200/30 shadow-2xl">
               <div className="text-amber-300 text-4xl mb-2">⚓</div>
               <div className="font-[var(--font-display-serif)] text-3xl md:text-4xl foil-shimmer">
                 {coupleNames.bride} & {coupleNames.groom}
@@ -66,7 +72,14 @@ export default function IntroOverlay({ coupleNames }: { coupleNames: { bride: st
                 <input id="music" type="checkbox" checked={playMusic} onChange={(e)=>setPlayMusic(e.target.checked)} />
                 <label htmlFor="music">Putar musik saat membuka</label>
               </div>
-              <button onClick={openInvitation} className="mt-6 inline-flex items-center gap-2 rounded-full px-6 py-3 bg-amber-400 text-blue-950 font-semibold shadow hover:bg-amber-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-400">
+              <button 
+                onClick={openInvitation} 
+                onMouseEnter={() => {
+                  // Preload boat model when user hovers
+                  window.dispatchEvent(new CustomEvent('preload-boat'));
+                }}
+                className="mt-6 inline-flex items-center gap-2 rounded-full px-6 py-3 bg-amber-400 text-blue-950 font-semibold shadow hover:bg-amber-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-400 transition-all duration-200"
+              >
                 Buka Undangan
               </button>
               <div aria-hidden className="mt-4 text-amber-400">⎯⎯⎯⛵⎯⎯⎯</div>

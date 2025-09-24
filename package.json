@@ -16,6 +16,7 @@
     "next": "15.5.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-icons": "^5.5.0",
     "three": "^0.180.0"
   },
   "devDependencies": {
@@ -26,6 +27,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.3",
+    "gltf-pipeline": "^4.3.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
