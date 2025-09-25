@@ -1,9 +1,10 @@
 "use client";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { OrbitControls, Environment, Html, useGLTF } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
 import { Group } from "three";
+import * as THREE from "three";
 import { useSearchParams } from "next/navigation";
 
 type Props = {
@@ -24,32 +25,39 @@ function BoatModel({ scale = 0.02 }: { scale?: number }) {
   const clonedScene = scene.clone();
   
   useEffect(() => {
-    clonedScene.traverse((child: any) => {
-      if (child?.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-        
+    clonedScene.traverse((child: THREE.Object3D) => {
+      if (child.type === 'Mesh') {
+        const mesh = child as THREE.Mesh;
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
         // Optimize materials
-        const mat = child.material;
+        const mat = mesh.material;
         if (mat) {
-          // Reduce texture resolution if too high
-          if (mat.map && mat.map.image) {
-            const img = mat.map.image;
-            if (img.width > 512 || img.height > 512) {
-              // Create smaller texture
-              const canvas = document.createElement('canvas');
-              const ctx = canvas.getContext('2d');
-              canvas.width = Math.min(512, img.width);
-              canvas.height = Math.min(512, img.height);
-              ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-              mat.map.image = canvas;
-              mat.map.needsUpdate = true;
-            }
-          }
+          // Handle array of materials
+          const materials = Array.isArray(mat) ? mat : [mat];
           
-          // Reduce material complexity
-          mat.roughness = mat.roughness || 0.5;
-          mat.metalness = mat.metalness || 0.0;
+          materials.forEach(material => {
+            // Reduce texture resolution if too high
+            if (material instanceof THREE.MeshStandardMaterial && material.map && material.map.image) {
+              const img = material.map.image;
+              if (img.width > 512 || img.height > 512) {
+                // Create smaller texture
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = Math.min(512, img.width);
+                canvas.height = Math.min(512, img.height);
+                ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+                material.map.image = canvas;
+                material.map.needsUpdate = true;
+              }
+            }
+            
+            // Reduce material complexity
+            if (material instanceof THREE.MeshStandardMaterial) {
+              material.roughness = material.roughness || 0.5;
+              material.metalness = material.metalness || 0.0;
+            }
+          });
         }
       }
     });
@@ -105,8 +113,7 @@ function FloatBoat({
 }
 
 function Waves({ reduceMotion }: { reduceMotion?: boolean }) {
-  const ref = useRef<any>(null);
-  const geo = useMemo(() => new Float32Array(200), []);
+  const ref = useRef<THREE.Mesh>(null);
   useFrame((state) => {
     if (!ref.current) return;
     const t = state.clock.getElapsedTime();

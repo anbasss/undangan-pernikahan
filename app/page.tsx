@@ -1,6 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 const HeroScene = dynamic(() => import("./components/HeroScene"), { ssr: false });
@@ -12,9 +12,9 @@ const ThankYouSection = dynamic(() => import("./components/ThankYouSection"));
 const Countdown = dynamic(() => import("./components/Countdown"), { ssr: false });
 const AudioPlayer = dynamic(() => import("./components/AudioPlayer"));
 const ShareBar = dynamic(() => import("./components/ShareBar"), { ssr: false });
-const IntroOverlay = dynamic(() => import("./components/IntroOverlay"), { ssr: false });
 
-export default function Home() {
+// Component that uses useSearchParams wrapped in Suspense
+function HomeContent() {
   const [reduceMotion, setReduceMotion] = useState(false);
   const [autoPlayMusic, setAutoPlayMusic] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -54,9 +54,9 @@ export default function Home() {
     const update = () => setReduceMotion(media.matches);
     update();
     media.addEventListener("change", update);
-    const onOpen = (e: any) => setAutoPlayMusic(Boolean(e.detail?.playMusic));
-    window.addEventListener("invitation-open", onOpen as any);
-    return () => { media.removeEventListener("change", update); window.removeEventListener("invitation-open", onOpen as any); };
+    const onOpen = (e: CustomEvent) => setAutoPlayMusic(Boolean(e.detail?.playMusic));
+    window.addEventListener("invitation-open", onOpen as EventListener);
+    return () => { media.removeEventListener("change", update); window.removeEventListener("invitation-open", onOpen as EventListener); };
   }, []);
 
   // Show loading while checking redirect logic
@@ -113,5 +113,26 @@ export default function Home() {
         © 2025 Andi Baso Patau & Andi Amparita — Berlayar bersama selamanya
       </footer>
     </main>
+  );
+}
+
+// Loading fallback component
+function HomeLoading() {
+  return (
+    <div className="min-h-screen bg-ocean flex items-center justify-center">
+      <div className="text-ivory text-center">
+        <div className="text-4xl mb-4">⚓</div>
+        <div>Memuat undangan...</div>
+      </div>
+    </div>
+  );
+}
+
+// Main export with Suspense boundary
+export default function Home() {
+  return (
+    <Suspense fallback={<HomeLoading />}>
+      <HomeContent />
+    </Suspense>
   );
 }
