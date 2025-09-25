@@ -75,7 +75,20 @@ export default function WeFoundLove() {
         </motion.div>
 
         {/* Couple Details */}
-        <div className="grid md:grid-cols-2 gap-8 md:gap-12 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-8 md:gap-12 max-w-4xl mx-auto relative">
+          {/* Center & Symbol - Only visible on desktop */}
+          <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5, rotate: -180 }}
+              whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
+              transition={{ duration: 1, delay: 1, type: "spring", bounce: 0.4 }}
+              viewport={{ once: true }}
+              className="w-16 h-16 bg-gradient-to-br from-golden via-golden/90 to-golden/70 rounded-full flex items-center justify-center shadow-2xl border-4 border-white/20 backdrop-blur-sm"
+            >
+              <span className="text-white font-serif text-2xl font-bold">&</span>
+            </motion.div>
+          </div>
+          
           {/* Bride */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}

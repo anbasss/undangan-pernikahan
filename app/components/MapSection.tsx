@@ -9,11 +9,12 @@ export default function MapSection() {
           className="w-full h-full"
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.164229785526!2d106.827153!3d-6.241586!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f1fa4a9c0a3f%3A0x84e8d8e7a997a00!2sJakarta!5e0!3m2!1sen!2sid!4v1683878100000"
-          aria-label="Peta lokasi acara"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1989.2249648119323!2d119.90684528481212!3d-4.326271207169601!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2d95f7187f4b08f1%3A0x86c1628b533e028e!2sMesjid%20salokaraja!5e0!3m2!1sen!2sid!4v1758762962421!5m2!1sen!2sid"
+          aria-label="Peta lokasi Mesjid Salokaraja"
+          allowFullScreen
         />
       </div>
-      <p className="text-center text-blue-100 mt-3">Bingkai peta bergaya nautical</p>
+      <p className="text-center text-blue-100 mt-3">Lokasi: Di Belakang Mesjid Salokaraja</p>
     </div>
   );
 }

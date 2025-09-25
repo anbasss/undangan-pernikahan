@@ -8,6 +8,7 @@ const WeFoundLove = dynamic(() => import("./components/WeFoundLove"));
 const WeddingEvents = dynamic(() => import("./components/WeddingEvents"));
 const MapSection = dynamic(() => import("./components/MapSection"));
 const RSVPForm = dynamic(() => import("./components/RSVPForm"));
+const ThankYouSection = dynamic(() => import("./components/ThankYouSection"));
 const Countdown = dynamic(() => import("./components/Countdown"), { ssr: false });
 const AudioPlayer = dynamic(() => import("./components/AudioPlayer"));
 const ShareBar = dynamic(() => import("./components/ShareBar"), { ssr: false });
@@ -99,9 +100,13 @@ export default function Home() {
           <h2 id="map" className="sr-only">Peta Lokasi</h2>
           <MapSection />
         </section>
-        <section aria-labelledby="rsvp" className="px-4 md:px-8 pb-20">
+        <section aria-labelledby="rsvp" className="px-4 md:px-8">
           <h2 id="rsvp" className="sr-only">RSVP</h2>
           <RSVPForm />
+        </section>
+        <section aria-labelledby="thankyou" className="px-4 md:px-8 pb-20">
+          <h2 id="thankyou" className="sr-only">Ucapan Terima Kasih</h2>
+          <ThankYouSection />
         </section>
       </div>
       <footer className="relative z-10 text-center py-8 text-sm text-blue-100/80">

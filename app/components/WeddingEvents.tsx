@@ -50,9 +50,9 @@ export default function WeddingEvents() {
           title="Akad Nikah"
           date={akadDate}
           time="09:00 WITA - Selesai"
-          location="Masjid Al-Ikhlas"
-          address="Jl. Veteran No. 123, Makassar, Sulawesi Selatan"
-          mapsUrl="https://maps.google.com/?q=Masjid+Al-Ikhlas+Makassar"
+          location="Mesjid Salokaraja"
+          address="Salokaraja, Sulawesi Selatan"
+          mapsUrl="https://maps.google.com/?q=Mesjid+Salokaraja"
           delay={0.2}
         />
 
