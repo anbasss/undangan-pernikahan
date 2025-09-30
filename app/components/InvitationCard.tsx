@@ -37,16 +37,26 @@ export default function InvitationCard({
         {/* Background Image */}
         {backgroundImage && (
           <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20 rounded-3xl"
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat rounded-3xl"
             style={{
               backgroundImage: `url(${backgroundImage})`,
-              filter: 'sepia(20%) hue-rotate(15deg) saturate(0.8) brightness(1.1)',
+              opacity: 0.48,
+              filter: 'sepia(6%) hue-rotate(6deg) saturate(1) brightness(1) contrast(1)',
             }}
           />
         )}
         
         {/* Background Overlay to maintain readability */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0b2a4a]/60 via-[#0b2a4a]/40 to-[#0b2a4a]/60 rounded-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0b2a4a]/40 via-[#0b2a4a]/18 to-[#0b2a4a]/28 rounded-3xl mix-blend-multiply" />
+
+        {/* Radial vignette to keep text legible while revealing photo */}
+        <div 
+          className="absolute inset-0 rounded-3xl"
+          style={{
+            background: "radial-gradient(circle at center, rgba(11,42,74,0.08) 0%, rgba(11,42,74,0.32) 75%)",
+            mixBlendMode: "multiply"
+          }}
+        />
         
         {/* Decorative Top Border */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-golden/50 via-golden/80 to-golden/50 z-10"></div>

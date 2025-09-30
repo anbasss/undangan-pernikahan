@@ -1,7 +1,7 @@
 "use client";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Suspense, useEffect, useRef, useState } from "react";
-import { OrbitControls, Environment, Html, useGLTF } from "@react-three/drei";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { OrbitControls, Environment, Html, useGLTF, Center } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
 import { Group } from "three";
 import * as THREE from "three";
@@ -11,18 +11,20 @@ type Props = {
   reduceMotion?: boolean;
   coupleNames: { bride: string; groom: string };
   date: string;
+  onBoatReady?: () => void;
 };
 
 // Water surface baseline and amplitude
-const WATER_Y = 0.7; // Water at sea level
+const WATER_Y = 0.3; // Water at sea level
 const WAVE_AMP = 0.05; // must match wave height in Waves
-const BOAT_CLEARANCE = 0.9; // vertical distance from water crest to boat bottom
+const BOAT_CLEARANCE = 0.5; // vertical distance from water crest to boat bottom
 
-function BoatModel({ scale = 0.02 }: { scale?: number }) {
+function BoatModel({ scale = 0.02, onLoaded }: { scale?: number; onLoaded?: () => void }) {
   const { scene } = useGLTF("/models/svitzer_gelliswick_-_fishing_boat_3d_scan.glb");  
   
   // Clone the scene to avoid shared state between instances
   const clonedScene = scene.clone();
+  const hasNotified = useRef(false);
   
   useEffect(() => {
     clonedScene.traverse((child: THREE.Object3D) => {
@@ -61,14 +63,17 @@ function BoatModel({ scale = 0.02 }: { scale?: number }) {
         }
       }
     });
-  }, [clonedScene]);
+    if (!hasNotified.current) {
+      hasNotified.current = true;
+      onLoaded?.();
+    }
+  }, [clonedScene, onLoaded]);
 
   return (
-    <group scale={scale} rotation={[0, 0, 0]} position={[0, 1, 0]}>
-      {/* Kapal sudah terpusat dengan posisi dan rotasi yang tepat */}
-      <group position={[-10, -14, 15]} rotation={[0, Math.PI / 2, 0]}>
+    <group scale={scale} position={[0,1, 0]}>
+      <Center bottom rotation={[0, Math.PI / 1.4, 0]}>
         <primitive object={clonedScene} />
-      </group>
+      </Center>
     </group>
   );
 }
@@ -76,14 +81,30 @@ function BoatModel({ scale = 0.02 }: { scale?: number }) {
 function FloatBoat({ 
   children, 
   reduceMotion, 
-  targetPosition = { x: 0, y: 0, z: 0 } 
+  targetPosition = { x: 0, y: 0, z: 0 },
+  initialPosition = targetPosition,
+  onArrived,
 }: { 
   children: React.ReactNode; 
   reduceMotion?: boolean;
   targetPosition?: { x: number; y: number; z: number };
+  initialPosition?: { x: number; y: number; z: number };
+  onArrived?: () => void;
 }) {
   const ref = useRef<Group>(null!);
-  const currentPosition = useRef({ x: 0, y: 0, z: 0 });
+  const currentPosition = useRef({ ...initialPosition });
+  const hasArrived = useRef(false);
+
+  useEffect(() => {
+    currentPosition.current = { ...initialPosition };
+    if (ref.current) {
+      ref.current.position.set(initialPosition.x, initialPosition.y, initialPosition.z);
+    }
+  }, [initialPosition]);
+
+  useEffect(() => {
+    hasArrived.current = false;
+  }, [targetPosition]);
   
   useFrame((state) => {
     if (!ref.current) return;
@@ -107,6 +128,16 @@ function FloatBoat({
     if (!reduceMotion) {
       ref.current.rotation.z = 0.03 * Math.sin(freq * x + t + Math.PI / 2);
       ref.current.rotation.x = 0.02 * Math.cos(freq * z + t + Math.PI / 2);
+    }
+
+    const distanceXZ = Math.hypot(
+      targetPosition.x - currentPosition.current.x,
+      targetPosition.z - currentPosition.current.z
+    );
+
+    if (!hasArrived.current && distanceXZ < 0.05) {
+      hasArrived.current = true;
+      onArrived?.();
     }
   });
   return <group ref={ref}>{children}</group>;
@@ -134,11 +165,15 @@ function Waves({ reduceMotion }: { reduceMotion?: boolean }) {
   );
 }
 
-export default function HeroScene({ reduceMotion, coupleNames, date }: Props) {
+export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady }: Props) {
   const params = useSearchParams();
   const [mounted, setMounted] = useState(false);
   const [isIntroActive, setIsIntroActive] = useState(true);
-  const [boatPosition, setBoatPosition] = useState({ x: 0, y: 0, z: 0 }); // Kapal mulai di tengah
+  const entranceStart = useMemo(() => ({ x: 0, y: 0, z: -6 }), []);
+  const [boatPosition, setBoatPosition] = useState(entranceStart); // Kapal mulai dari belakang
+  const [boatLoaded, setBoatLoaded] = useState(false);
+  const boatReadyNotified = useRef(false);
+  const [sceneVisible, setSceneVisible] = useState(false);
   const [name, setName] = useState("");
 
   useEffect(() => {
@@ -149,6 +184,12 @@ export default function HeroScene({ reduceMotion, coupleNames, date }: Props) {
       setBoatPosition({ x: 0, y: 0, z: 0 }); // Kapal tetap di tengah
     }
   }, []);
+
+  useEffect(() => {
+    if (boatLoaded) {
+      setBoatPosition({ x: 0, y: 0, z: 0 });
+    }
+  }, [boatLoaded]);
 
   useEffect(() => {
     const to = params?.get("to");
@@ -214,9 +255,17 @@ export default function HeroScene({ reduceMotion, coupleNames, date }: Props) {
           <FloatBoat 
             reduceMotion={reduceMotion} 
             targetPosition={boatPosition}
+            initialPosition={entranceStart}
+            onArrived={() => {
+              if (boatLoaded && !boatReadyNotified.current) {
+                boatReadyNotified.current = true;
+                setSceneVisible(true);
+                onBoatReady?.();
+              }
+            }}
           >
             <Suspense fallback={<Html center style={{ color: 'white' }}>Memuat kapal...</Html>}>
-              <BoatModel scale={0.5} />
+              <BoatModel scale={0.9} onLoaded={() => setBoatLoaded(true)} />
             </Suspense>
           </FloatBoat>
           
@@ -238,7 +287,7 @@ export default function HeroScene({ reduceMotion, coupleNames, date }: Props) {
         {isIntroActive && (
           <motion.div
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.8, ease: "easeInOut" }}
             className="fixed inset-0 flex flex-col items-center justify-center text-center px-6 bg-gradient-to-b from-[rgba(11,42,74,0.2)] to-[rgba(11,42,74,0.4)] z-50 overflow-hidden"
           >
@@ -305,14 +354,7 @@ export default function HeroScene({ reduceMotion, coupleNames, date }: Props) {
         >
           {coupleNames.bride} & {coupleNames.groom}
         </motion.h1>
-        <motion.p 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: isIntroActive ? 0 : 1, y: isIntroActive ? 20 : 0 }}
-          transition={{ duration: 0.8, delay: isIntroActive ? 0 : 0.7 }}
-          className="mt-3 text-blue-100/90 text-lg md:text-xl uppercase tracking-[0.25em] font-sans"
-        >
-          Nautical Wedding
-        </motion.p>
+        
         <motion.p 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: isIntroActive ? 0 : 1, y: isIntroActive ? 20 : 0 }}
