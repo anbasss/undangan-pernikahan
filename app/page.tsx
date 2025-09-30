@@ -1,5 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
+import { MotionConfig } from "framer-motion";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
@@ -16,7 +17,6 @@ const ShareBar = dynamic(() => import("./components/ShareBar"), { ssr: false });
 // Component that uses useSearchParams wrapped in Suspense
 function HomeContent() {
   const [reduceMotion, setReduceMotion] = useState(false);
-  const [autoPlayMusic, setAutoPlayMusic] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -54,9 +54,7 @@ function HomeContent() {
     const update = () => setReduceMotion(media.matches);
     update();
     media.addEventListener("change", update);
-    const onOpen = (e: CustomEvent) => setAutoPlayMusic(Boolean(e.detail?.playMusic));
-    window.addEventListener("invitation-open", onOpen as EventListener);
-    return () => { media.removeEventListener("change", update); window.removeEventListener("invitation-open", onOpen as EventListener); };
+    return () => { media.removeEventListener("change", update); };
   }, []);
 
   // Show loading while checking redirect logic
@@ -72,7 +70,8 @@ function HomeContent() {
   }
 
   return (
-    <main className="min-h-screen bg-ocean text-foreground font-[var(--font-body-sans)] relative">
+    <MotionConfig reducedMotion={reduceMotion ? "always" : "never"} transition={{ type: "tween", ease: "easeOut" }}>
+      <main className="min-h-screen bg-ocean text-foreground font-[var(--font-body-sans)] relative">
       {/* Floating nautical elements */}
       
       <a href="#content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-white/90 text-blue-900 px-3 py-2 rounded">
@@ -112,7 +111,8 @@ function HomeContent() {
       <footer className="relative z-10 text-center py-8 text-sm text-blue-100/80">
         © 2025 Andi Baso Patau & Andi Amparita — Berlayar bersama selamanya
       </footer>
-    </main>
+      </main>
+    </MotionConfig>
   );
 }
 

@@ -20,59 +20,55 @@ const WAVE_AMP = 0.05; // must match wave height in Waves
 const BOAT_CLEARANCE = 0.5; // vertical distance from water crest to boat bottom
 
 function BoatModel({ scale = 0.02, onLoaded }: { scale?: number; onLoaded?: () => void }) {
-  const { scene } = useGLTF("/models/svitzer_gelliswick_-_fishing_boat_3d_scan.glb");  
-  
-  // Clone the scene to avoid shared state between instances
-  const clonedScene = scene.clone();
+  const { scene } = useGLTF("/models/svitzer_gelliswick_-_fishing_boat_3d_scan.glb");
+
+  const optimizedScene = useMemo(() => scene.clone(true), [scene]);
   const hasNotified = useRef(false);
-  
+
   useEffect(() => {
-    clonedScene.traverse((child: THREE.Object3D) => {
-      if (child.type === 'Mesh') {
-        const mesh = child as THREE.Mesh;
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        // Optimize materials
-        const mat = mesh.material;
-        if (mat) {
-          // Handle array of materials
-          const materials = Array.isArray(mat) ? mat : [mat];
-          
-          materials.forEach(material => {
-            // Reduce texture resolution if too high
-            if (material instanceof THREE.MeshStandardMaterial && material.map && material.map.image) {
-              const img = material.map.image;
-              if (img.width > 512 || img.height > 512) {
-                // Create smaller texture
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = Math.min(512, img.width);
-                canvas.height = Math.min(512, img.height);
-                ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-                material.map.image = canvas;
-                material.map.needsUpdate = true;
-              }
-            }
-            
-            // Reduce material complexity
-            if (material instanceof THREE.MeshStandardMaterial) {
-              material.roughness = material.roughness || 0.5;
-              material.metalness = material.metalness || 0.0;
-            }
-          });
+    optimizedScene.traverse((child: THREE.Object3D) => {
+      if (!("isMesh" in child) || !(child as THREE.Mesh).isMesh) return;
+      const mesh = child as THREE.Mesh;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      const mat = mesh.material;
+      if (!mat) return;
+      const materials = Array.isArray(mat) ? mat : [mat];
+
+      materials.forEach((material) => {
+        if (!(material instanceof THREE.MeshStandardMaterial)) return;
+        material.roughness = material.roughness ?? 0.5;
+        material.metalness = material.metalness ?? 0.0;
+
+        const texture = material.map;
+        if (!texture || !texture.image || material.userData.optimizedTexture) return;
+        const image = texture.image as HTMLImageElement | HTMLCanvasElement;
+        const MAX_SIZE = 1024;
+        if (image.width <= MAX_SIZE && image.height <= MAX_SIZE) return;
+
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.min(MAX_SIZE, image.width);
+        canvas.height = Math.min(MAX_SIZE, image.height);
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+          texture.image = canvas;
+          texture.needsUpdate = true;
+          material.userData.optimizedTexture = true;
         }
-      }
+      });
     });
+
     if (!hasNotified.current) {
       hasNotified.current = true;
       onLoaded?.();
     }
-  }, [clonedScene, onLoaded]);
+  }, [optimizedScene, onLoaded]);
 
   return (
-    <group scale={scale} position={[0,1, 0]}>
+    <group scale={scale} position={[0, 1, 0]}>
       <Center bottom rotation={[0, Math.PI / 1.4, 0]}>
-        <primitive object={clonedScene} />
+        <primitive object={optimizedScene} />
       </Center>
     </group>
   );
@@ -106,7 +102,7 @@ function FloatBoat({
     hasArrived.current = false;
   }, [targetPosition]);
   
-  useFrame((state) => {
+  useFrame((state, delta) => {
     if (!ref.current) return;
     const t = state.clock.getElapsedTime();
     const base = WATER_Y; // water baseline
@@ -115,11 +111,21 @@ function FloatBoat({
     const x = 0, z = 0; // boat at origin
     const h = base + amp * Math.sin(freq * x + t) * Math.cos(freq * z + t);
     const clearance = BOAT_CLEARANCE; // keep hull above peak waves
-    
-    // Lerp to target position
-    const lerpSpeed = 0.05;
-    currentPosition.current.x += (targetPosition.x - currentPosition.current.x) * lerpSpeed;
-    currentPosition.current.z += (targetPosition.z - currentPosition.current.z) * lerpSpeed;
+
+    // Lerp to target position with delta-based damping
+    const damping = reduceMotion ? 4 : 6;
+    currentPosition.current.x = THREE.MathUtils.damp(
+      currentPosition.current.x,
+      targetPosition.x,
+      damping,
+      delta
+    );
+    currentPosition.current.z = THREE.MathUtils.damp(
+      currentPosition.current.z,
+      targetPosition.z,
+      damping,
+      delta
+    );
     
     ref.current.position.y = h + clearance + targetPosition.y;
     ref.current.position.x = currentPosition.current.x;
@@ -145,18 +151,39 @@ function FloatBoat({
 
 function Waves({ reduceMotion }: { reduceMotion?: boolean }) {
   const ref = useRef<THREE.Mesh>(null);
+  const basePositions = useRef<Float32Array>();
+  const frameSkip = useRef(0);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    const attribute = ref.current.geometry.attributes.position as THREE.BufferAttribute;
+    basePositions.current = new Float32Array(attribute.array as Float32Array);
+  }, []);
+
   useFrame((state) => {
     if (!ref.current) return;
+    const attribute = ref.current.geometry.attributes.position as THREE.BufferAttribute;
+    const positions = attribute.array as Float32Array;
+    const base = basePositions.current ?? positions;
+
+    // Skip frames to reduce CPU cost when animations are heavy
+    const skipModulo = reduceMotion ? 4 : 2;
+    frameSkip.current = (frameSkip.current + 1) % skipModulo;
+    if (frameSkip.current !== 0) return;
+
     const t = state.clock.getElapsedTime();
-    const el = ref.current.geometry.attributes.position;
-    for (let i = 0; i < el.count; i++) {
-      const x = i % 50;
-      const y = Math.floor(i / 50);
-      const height = reduceMotion ? 0 : Math.sin(x / 2 + t) * Math.cos(y / 2 + t) * WAVE_AMP;
-      el.setZ(i, height);
+    const amp = reduceMotion ? 0 : WAVE_AMP;
+    const freq = 0.6;
+
+    for (let i = 0; i < positions.length; i += 3) {
+      const x = base[i];
+      const y = base[i + 1];
+      positions[i + 2] = amp * Math.sin(freq * x + t) * Math.cos(freq * y + t);
     }
-    el.needsUpdate = true;
+
+    attribute.needsUpdate = true;
   });
+
   return (
     <mesh ref={ref} rotation={[-Math.PI / 2, 0, 0]} position={[0, WATER_Y, 0]} receiveShadow>
       <planeGeometry args={[10, 10, 49, 49]} />
@@ -241,17 +268,19 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
         boxShadow: "0 0 40px rgba(255,215,130,0.15) inset",
       }} />
 
-      <Canvas 
-        camera={{ 
+      <Canvas
+        camera={{
           position: [0, 1.5, 4], // Posisi kamera tetap untuk melihat kapal di tengah
-          fov: 60 
-        }} 
+          fov: 60,
+        }}
         shadows
+        dpr={[1, 1.5]}
+        gl={{ antialias: true, powerPreference: "high-performance" }}
       >
         <ambientLight intensity={0.8} />
         <directionalLight position={[2, 3, 2]} intensity={1.2} castShadow />
         <Suspense fallback={null}>
-          <Environment preset="sunset" />
+          {sceneVisible && <Environment preset="sunset" />}
           <FloatBoat 
             reduceMotion={reduceMotion} 
             targetPosition={boatPosition}
@@ -270,12 +299,16 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
           </FloatBoat>
           
           <Waves reduceMotion={reduceMotion} />
-          {!reduceMotion && <OrbitControls enablePan={false} enableZoom={false} maxPolarAngle={Math.PI / 2.2} target={[0, 0, 0]} />}
-          
-          {/* Waves - commented out for debugging */}
-          {/* <Waves reduceMotion={reduceMotion} /> */}
-          
-          <OrbitControls enablePan={true} enableZoom={true} maxPolarAngle={Math.PI / 2.2} target={[0, 0, 0]} />
+          {sceneVisible && (
+            <OrbitControls
+              enablePan={!reduceMotion}
+              enableZoom={!reduceMotion}
+              maxPolarAngle={Math.PI / 2.2}
+              target={[0, 0, 0]}
+              enableDamping
+              dampingFactor={0.08}
+            />
+          )}
         </Suspense>
       </Canvas>
 
