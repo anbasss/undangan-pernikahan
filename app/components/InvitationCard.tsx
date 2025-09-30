@@ -10,6 +10,7 @@ interface InvitationCardProps {
   address: string;
   mapsUrl: string;
   delay?: number;
+  backgroundImage?: string;
 }
 
 export default function InvitationCard({
@@ -19,7 +20,8 @@ export default function InvitationCard({
   location,
   address,
   mapsUrl,
-  delay = 0
+  delay = 0,
+  backgroundImage
 }: InvitationCardProps) {
   return (
     <motion.div
@@ -32,18 +34,32 @@ export default function InvitationCard({
       {/* Elegant Card Container */}
       <div className="relative bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md rounded-3xl p-8 border-2 border-golden/40 shadow-2xl group-hover:shadow-golden/20 transition-all duration-500 overflow-hidden">
         
+        {/* Background Image */}
+        {backgroundImage && (
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20 rounded-3xl"
+            style={{
+              backgroundImage: `url(${backgroundImage})`,
+              filter: 'sepia(20%) hue-rotate(15deg) saturate(0.8) brightness(1.1)',
+            }}
+          />
+        )}
+        
+        {/* Background Overlay to maintain readability */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0b2a4a]/60 via-[#0b2a4a]/40 to-[#0b2a4a]/60 rounded-3xl" />
+        
         {/* Decorative Top Border */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-golden/50 via-golden/80 to-golden/50"></div>
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-golden/50 via-golden/80 to-golden/50 z-10"></div>
         
         {/* Subtle Pattern Background */}
         <div 
-          className="absolute inset-0 opacity-5"
+          className="absolute inset-0 opacity-5 z-10"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23caa969' fill-opacity='0.1'%3E%3Ccircle cx='9' cy='9' r='2'/%3E%3Ccircle cx='15' cy='15' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
           }}
         />
 
-        <div className="relative z-10 text-center">
+        <div className="relative z-20 text-center">
           {/* Dancing Script Title */}
           <div className="mb-8">
             

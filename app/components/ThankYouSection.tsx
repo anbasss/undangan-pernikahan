@@ -31,11 +31,7 @@ export default function ThankYouSection() {
           
           <div className="relative p-8 md:p-12 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-3xl border border-golden/30 shadow-2xl">
             {/* Decorative lines at top */}
-            <div className="flex items-center justify-center gap-4 text-golden mb-8">
-              <span aria-hidden className="h-px w-16 bg-golden/40" />
-              <span aria-hidden className="text-2xl">⚓</span>
-              <span aria-hidden className="h-px w-16 bg-golden/40" />
-            </div>
+          
             
             {/* Thank you message */}
             <div className="space-y-6 text-ivory">
@@ -71,12 +67,7 @@ export default function ThankYouSection() {
               </motion.div>
             </div>
             
-            {/* Decorative lines at bottom */}
-            <div className="flex items-center justify-center gap-4 text-golden mt-8">
-              <span aria-hidden className="h-px w-16 bg-golden/40" />
-              <span aria-hidden className="text-2xl">⚓</span>
-              <span aria-hidden className="h-px w-16 bg-golden/40" />
-            </div>
+            
           </div>
         </motion.div>
       </div>

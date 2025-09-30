@@ -54,6 +54,7 @@ export default function WeddingEvents() {
           address="Salokaraja, Sulawesi Selatan"
           mapsUrl="https://maps.google.com/?q=Mesjid+Salokaraja"
           delay={0.2}
+          backgroundImage="/gambar1.jpg"
         />
 
         <InvitationCard
@@ -64,6 +65,7 @@ export default function WeddingEvents() {
           address="Jl. Pantai Losari No. 5, Makassar, Sulawesi Selatan"
           mapsUrl="https://maps.google.com/?q=Hotel+Pantai+Gapura+Makassar"
           delay={0.4}
+          backgroundImage="/gambar2.jpg"
         />
       </div>
 
