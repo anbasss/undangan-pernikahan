@@ -151,7 +151,7 @@ function FloatBoat({
 
 function Waves({ reduceMotion }: { reduceMotion?: boolean }) {
   const ref = useRef<THREE.Mesh>(null);
-  const basePositions = useRef<Float32Array>();
+const basePositions = useRef<Float32Array>(new Float32Array());
   const frameSkip = useRef(0);
 
   useEffect(() => {
