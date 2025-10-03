@@ -1,6 +1,6 @@
 "use client";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { OrbitControls, Environment, Html, useGLTF, Center } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
 import { Group } from "three";
@@ -18,6 +18,18 @@ type Props = {
 const WATER_Y = 0.3; // Water at sea level
 const WAVE_AMP = 0.05; // must match wave height in Waves
 const BOAT_CLEARANCE = 0.5; // vertical distance from water crest to boat bottom
+
+function isPositionClose(
+  a: { x: number; y: number; z: number },
+  b: { x: number; y: number; z: number },
+  epsilon = 0.01
+) {
+  return (
+    Math.abs(a.x - b.x) <= epsilon &&
+    Math.abs(a.y - b.y) <= epsilon &&
+    Math.abs(a.z - b.z) <= epsilon
+  );
+}
 
 function BoatModel({ scale = 0.02, onLoaded }: { scale?: number; onLoaded?: () => void }) {
   const { scene } = useGLTF("/models/svitzer_gelliswick_-_fishing_boat_3d_scan.glb");
@@ -113,7 +125,7 @@ function FloatBoat({
     const clearance = BOAT_CLEARANCE; // keep hull above peak waves
 
     // Lerp to target position with delta-based damping
-    const damping = reduceMotion ? 4 : 6;
+  const damping = reduceMotion ? 1.6 : 2.6;
     currentPosition.current.x = THREE.MathUtils.damp(
       currentPosition.current.x,
       targetPosition.x,
@@ -196,27 +208,40 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
   const params = useSearchParams();
   const [mounted, setMounted] = useState(false);
   const [isIntroActive, setIsIntroActive] = useState(true);
-  const entranceStart = useMemo(() => ({ x: 0, y: 0, z: -6 }), []);
-  const [boatPosition, setBoatPosition] = useState(entranceStart); // Kapal mulai dari belakang
+  const entranceStart = useMemo(() => ({ x: 6, y: 0, z: 0 }), []);
+  const centerPosition = useMemo(() => ({ x: 0, y: 0, z: 0 }), []);
+  const [boatPosition, setBoatPosition] = useState(entranceStart); // Kapal mulai dari sisi kanan
   const [boatLoaded, setBoatLoaded] = useState(false);
+  const [boatReady, setBoatReady] = useState(false);
   const boatReadyNotified = useRef(false);
-  const [sceneVisible, setSceneVisible] = useState(false);
   const [name, setName] = useState("");
+
+  const updateBoatPosition = useCallback(
+    (next: { x: number; y: number; z: number }) => {
+      setBoatPosition((prev) => (isPositionClose(prev, next) ? prev : next));
+    },
+    []
+  );
 
   useEffect(() => {
     setMounted(true);
     const opened = typeof window !== 'undefined' ? sessionStorage.getItem("inv-opened") : null;
     if (opened === "1") {
       setIsIntroActive(false);
-      setBoatPosition({ x: 0, y: 0, z: 0 }); // Kapal tetap di tengah
+      updateBoatPosition(centerPosition); // Kapal tetap di tengah
+      setBoatReady(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (boatLoaded) {
-      setBoatPosition({ x: 0, y: 0, z: 0 });
+      updateBoatPosition(centerPosition);
+    } else {
+      setBoatReady(false);
+      boatReadyNotified.current = false;
     }
-  }, [boatLoaded]);
+  }, [boatLoaded, centerPosition, updateBoatPosition]);
 
   useEffect(() => {
     const to = params?.get("to");
@@ -224,16 +249,27 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
   }, [params]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (boatReady) {
+      sessionStorage.setItem("boat-ready", "1");
+      window.dispatchEvent(new CustomEvent("boat-ready"));
+    } else {
+      sessionStorage.removeItem("boat-ready");
+    }
+  }, [boatReady]);
+
+  useEffect(() => {
     // Listen for invitation open event
     const handleInvitationOpen = () => {
       setIsIntroActive(false);
       // Kapal tetap di tengah, tidak bergeser
-      setBoatPosition({ x: 0, y: 0, z: 0 }); // Tetap di tengah
+      updateBoatPosition(centerPosition); // Tetap di tengah
+      setBoatReady(true);
     };
 
     window.addEventListener("invitation-open", handleInvitationOpen);
     return () => window.removeEventListener("invitation-open", handleInvitationOpen);
-  }, []);
+  }, [centerPosition, updateBoatPosition]);
 
   // Prevent scrolling when intro overlay is active
   useEffect(() => {
@@ -251,7 +287,8 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
 
   function openInvitation() {
     // Dispatch event untuk animasi kapal dan show couple names (dengan musik otomatis)
-    const ev = new CustomEvent("invitation-open", { detail: { playMusic: true, inviteeName: name } });
+  if (!boatReady) return;
+  const ev = new CustomEvent("invitation-open", { detail: { playMusic: true, inviteeName: name } });
     window.dispatchEvent(ev);
     // Hilangkan overlay dengan animasi smooth
     setIsIntroActive(false);
@@ -280,7 +317,7 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
         <ambientLight intensity={0.8} />
         <directionalLight position={[2, 3, 2]} intensity={1.2} castShadow />
         <Suspense fallback={null}>
-          {sceneVisible && <Environment preset="sunset" />}
+          <Environment preset="sunset" />
           <FloatBoat 
             reduceMotion={reduceMotion} 
             targetPosition={boatPosition}
@@ -288,7 +325,7 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
             onArrived={() => {
               if (boatLoaded && !boatReadyNotified.current) {
                 boatReadyNotified.current = true;
-                setSceneVisible(true);
+                setBoatReady(true);
                 onBoatReady?.();
               }
             }}
@@ -299,16 +336,15 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
           </FloatBoat>
           
           <Waves reduceMotion={reduceMotion} />
-          {sceneVisible && (
-            <OrbitControls
-              enablePan={!reduceMotion}
-              enableZoom={!reduceMotion}
-              maxPolarAngle={Math.PI / 2.2}
-              target={[0, 0, 0]}
-              enableDamping
-              dampingFactor={0.08}
-            />
-          )}
+          <OrbitControls
+            enabled={boatReady}
+            enablePan={!reduceMotion}
+            enableZoom={!reduceMotion}
+            maxPolarAngle={Math.PI / 2.2}
+            target={[0, 0, 0]}
+            enableDamping
+            dampingFactor={0.08}
+          />
         </Suspense>
       </Canvas>
 
@@ -357,13 +393,19 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
                   You&apos;re Invited to Our Wedding Celebration
                 </p>
 
-                <button
-                  onClick={openInvitation}
-                  className="w-full py-4 px-6 bg-gradient-to-r from-golden to-[#f3d27c] text-[#0b2a4a] font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 focus:ring-4 focus:ring-golden/50 font-sans"
-                  aria-label={`Buka undangan pernikahan ${coupleNames.bride} dan ${coupleNames.groom}`}
-                >
-                  Buka Undangan
-                </button>
+                {boatReady ? (
+                  <button
+                    onClick={openInvitation}
+                    className="w-full py-4 px-6 bg-gradient-to-r from-golden to-[#f3d27c] text-[#0b2a4a] font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 focus:ring-4 focus:ring-golden/50 font-sans"
+                    aria-label={`Buka undangan pernikahan ${coupleNames.bride} dan ${coupleNames.groom}`}
+                  >
+                    Buka Undangan
+                  </button>
+                ) : (
+                  <div className="w-full py-4 px-6 bg-blue-900/60 border border-golden/30 text-golden/80 rounded-xl font-sans">
+                    Menunggu kapal tiba di dermaga...
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-2 text-golden text-sm">

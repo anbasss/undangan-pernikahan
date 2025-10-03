@@ -9,11 +9,14 @@ export default function IntroOverlay({ coupleNames }: { coupleNames: { bride: st
   const [show, setShow] = useState(true);
   const [name, setName] = useState("");
   const [playMusic, setPlayMusic] = useState(true);
+  const [boatReady, setBoatReady] = useState(false);
 
   useEffect(() => {
     // Run only on client
     setMounted(true);
     const opened = typeof window !== 'undefined' ? sessionStorage.getItem("inv-opened") : null;
+    const boatReadyFlag = typeof window !== 'undefined' ? sessionStorage.getItem("boat-ready") : null;
+    if (boatReadyFlag === "1") setBoatReady(true);
     // Always show overlay on fresh load unless explicitly hidden by user action
     if (opened === "1") {
       // Check if this might be a page refresh - if so, show overlay again
@@ -28,11 +31,19 @@ export default function IntroOverlay({ coupleNames }: { coupleNames: { bride: st
   }, []);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleBoatReady = () => setBoatReady(true);
+    window.addEventListener("boat-ready", handleBoatReady);
+    return () => window.removeEventListener("boat-ready", handleBoatReady);
+  }, []);
+
+  useEffect(() => {
     const to = params?.get("to");
     if (to) setName(decodeURIComponent(to.replaceAll("+", " ")));
   }, [params]);
 
   function openInvitation() {
+    if (!boatReady) return;
     // Dispatch event untuk animasi kapal dan show couple names
     const ev = new CustomEvent("invitation-open", { detail: { playMusic, inviteeName: name } });
     window.dispatchEvent(ev);
@@ -72,16 +83,23 @@ export default function IntroOverlay({ coupleNames }: { coupleNames: { bride: st
                 <input id="music" type="checkbox" checked={playMusic} onChange={(e)=>setPlayMusic(e.target.checked)} />
                 <label htmlFor="music">Putar musik saat membuka</label>
               </div>
-              <button 
-                onClick={openInvitation} 
-                onMouseEnter={() => {
-                  // Preload boat model when user hovers
-                  window.dispatchEvent(new CustomEvent('preload-boat'));
-                }}
-                className="mt-6 inline-flex items-center gap-2 rounded-full px-6 py-3 bg-amber-400 text-blue-950 font-semibold shadow hover:bg-amber-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-400 transition-all duration-200"
-              >
-                Buka Undangan
-              </button>
+              {boatReady ? (
+                <button 
+                  onClick={openInvitation} 
+                  onMouseEnter={() => {
+                    // Preload boat model when user hovers
+                    window.dispatchEvent(new CustomEvent('preload-boat'));
+                  }}
+                  className="mt-6 inline-flex items-center gap-2 rounded-full px-6 py-3 bg-amber-400 text-blue-950 font-semibold shadow hover:bg-amber-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-400 transition-all duration-200"
+                >
+                  Buka Undangan
+                </button>
+              ) : (
+                <div className="mt-6 inline-flex items-center gap-2 rounded-full px-6 py-3 bg-blue-900/60 text-amber-200 border border-amber-200/40 shadow-inner">
+                  <span className="inline-block h-2 w-2 rounded-full bg-amber-300 animate-pulse" aria-hidden />
+                  Kapal sedang berlayar menuju dermaga...
+                </div>
+              )}
               <div aria-hidden className="mt-4 text-amber-400">⎯⎯⎯⛵⎯⎯⎯</div>
             </div>
           </motion.div>
