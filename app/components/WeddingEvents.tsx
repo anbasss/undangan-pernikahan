@@ -3,8 +3,15 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import InvitationCard from "./InvitationCard";
 import { FaRegHeart } from "react-icons/fa";
+import { usePerformanceMode } from "../hooks/usePerformanceMode";
 
 export default function WeddingEvents() {
+  const performanceMode = usePerformanceMode();
+  const isLowPerformance = performanceMode === "low";
+  const isBalancedPerformance = performanceMode === "balanced";
+  const introDuration = isLowPerformance ? 0.65 : 0.8;
+  const outroDuration = isLowPerformance ? 0.65 : 0.8;
+
   const [akadDate, setAkadDate] = useState<string>("");
   const [resepsiDate, setResepsiDate] = useState<string>("");
 
@@ -32,7 +39,7 @@ export default function WeddingEvents() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: introDuration }}
         viewport={{ once: true }}
         className="text-center mb-16"
       >
@@ -75,9 +82,10 @@ export default function WeddingEvents() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.6 }}
+        transition={{ duration: outroDuration, delay: 0.6 }}
         viewport={{ once: true }}
         className="text-center mt-12 p-6 bg-gradient-to-br from-white/8 to-white/3 backdrop-blur-sm rounded-2xl border border-[rgba(var(--gold-rgb),0.25)] shadow-golden-soft"
+        style={{ willChange: "transform, opacity" }}
       >
         <div className="mb-4 flex items-center justify-center gap-3 text-golden">
           <span aria-hidden className="h-px w-8 bg-[rgba(var(--gold-rgb),0.35)]"></span>

@@ -2,10 +2,11 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { OrbitControls, Environment, Html, useGLTF, Center } from "@react-three/drei";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, circOut } from "framer-motion";
 import { Group } from "three";
 import * as THREE from "three";
 import { useSearchParams } from "next/navigation";
+import { usePerformanceMode } from "../hooks/usePerformanceMode";
 
 type Props = {
   reduceMotion?: boolean;
@@ -95,6 +96,7 @@ function FloatBoat({
   initialPosition = targetPosition,
   onArrived,
   lockHeading = false,
+  driftStrength = 1,
 }: { 
   children: React.ReactNode; 
   reduceMotion?: boolean;
@@ -102,6 +104,7 @@ function FloatBoat({
   initialPosition?: { x: number; y: number; z: number };
   onArrived?: () => void;
   lockHeading?: boolean;
+  driftStrength?: number;
 }) {
   const ref = useRef<Group>(null!);
   const currentPosition = useRef({ ...initialPosition });
@@ -219,8 +222,9 @@ function FloatBoat({
     }
 
   const driftEnabled = !reduceMotion && !animatingRef.current;
-  const driftX = driftEnabled ? 0.08 * Math.sin(t * 0.25 + driftPhase.current) : 0;
-  const driftZ = driftEnabled ? 0.05 * Math.cos(t * 0.22 + driftPhase.current) : 0;
+  const driftScale = driftStrength;
+  const driftX = driftEnabled ? 0.08 * driftScale * Math.sin(t * 0.25 + driftPhase.current) : 0;
+  const driftZ = driftEnabled ? 0.05 * driftScale * Math.cos(t * 0.22 + driftPhase.current) : 0;
 
   ref.current.position.x = currentPosition.current.x + driftX;
   ref.current.position.z = currentPosition.current.z + driftZ;
@@ -248,7 +252,15 @@ function FloatBoat({
   return <group ref={ref}>{children}</group>;
 }
 
-function Waves({ reduceMotion }: { reduceMotion?: boolean }) {
+function Waves({
+  reduceMotion,
+  detail = 49,
+  skipModulo = 2,
+}: {
+  reduceMotion?: boolean;
+  detail?: number;
+  skipModulo?: number;
+}) {
   const ref = useRef<THREE.Mesh>(null);
 const basePositions = useRef<Float32Array>(new Float32Array());
   const frameSkip = useRef(0);
@@ -266,8 +278,8 @@ const basePositions = useRef<Float32Array>(new Float32Array());
     const base = basePositions.current ?? positions;
 
     // Skip frames to reduce CPU cost when animations are heavy
-    const skipModulo = reduceMotion ? 4 : 2;
-    frameSkip.current = (frameSkip.current + 1) % skipModulo;
+  const effectiveSkip = reduceMotion ? Math.max(skipModulo, 4) : skipModulo;
+  frameSkip.current = (frameSkip.current + 1) % effectiveSkip;
     if (frameSkip.current !== 0) return;
 
     const t = state.clock.getElapsedTime();
@@ -285,13 +297,16 @@ const basePositions = useRef<Float32Array>(new Float32Array());
 
   return (
     <mesh ref={ref} rotation={[-Math.PI / 2, 0, 0]} position={[0, WATER_Y, 0]} receiveShadow>
-      <planeGeometry args={[10, 10, 49, 49]} />
+      <planeGeometry args={[10, 10, detail, detail]} />
       <meshStandardMaterial color="#0b2a4a" roughness={1} metalness={0} />
     </mesh>
   );
 }
 
 export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady }: Props) {
+  const performanceMode = usePerformanceMode();
+  const isLowPerformance = performanceMode === "low";
+  const isBalancedPerformance = performanceMode === "balanced";
   const params = useSearchParams();
   const [mounted, setMounted] = useState(false);
   const [isIntroActive, setIsIntroActive] = useState(true);
@@ -394,6 +409,45 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
     sessionStorage.setItem("inv-opened", "1");
   }
 
+  const canvasDpr: [number, number] = isLowPerformance
+    ? [0.75, 1.1]
+    : isBalancedPerformance
+    ? [0.9, 1.3]
+    : [1, 1.5];
+  const gradientDuration = isLowPerformance ? 24 : isBalancedPerformance ? 28 : 30;
+  const nameTransitionDuration = isLowPerformance ? 0.8 : 1;
+  const taglineTransitionDuration = isLowPerformance ? 0.7 : 0.8;
+  const driftStrength = isLowPerformance ? 0.6 : isBalancedPerformance ? 0.85 : 1;
+  const waveDetail = isLowPerformance ? 32 : isBalancedPerformance ? 40 : 49;
+  const waveSkip = isLowPerformance ? 5 : isBalancedPerformance ? 3 : 2;
+
+  const nameContainerVariants = useMemo(() => ({
+    hidden: { opacity: 0, y: 24, letterSpacing: "0.35em" },
+    show: {
+      opacity: 1,
+      y: 0,
+      letterSpacing: "0.08em",
+      transition: {
+        duration: nameTransitionDuration,
+        ease: circOut,
+        staggerChildren: 0.12,
+        delayChildren: isIntroActive ? 0 : 0.05,
+      },
+    },
+  }), [nameTransitionDuration, isIntroActive]);
+
+  const nameItemVariants = useMemo(
+    () => ({
+      hidden: { opacity: 0, y: 22 },
+      show: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: nameTransitionDuration * 0.65, ease: circOut },
+      },
+    }),
+    [nameTransitionDuration]
+  );
+
   if (!mounted) return null;
   
   return (
@@ -410,11 +464,12 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
         className="absolute inset-0 -z-20"
         initial={{ backgroundPosition: "0% 50%" }}
         animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
-        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+        transition={{ duration: gradientDuration, repeat: Infinity, ease: "linear" }}
         style={{
           backgroundImage:
             "linear-gradient(135deg, rgba(5,20,42,0.95) 0%, rgba(13,54,94,0.92) 45%, rgba(32,110,173,0.85) 70%, rgba(112,177,224,0.75) 100%)",
           backgroundSize: "200% 200%",
+          willChange: "background-position",
         }}
       />
 
@@ -436,12 +491,16 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
           position: [0, 1.5, 4], // Posisi kamera tetap untuk melihat kapal di tengah
           fov: 60,
         }}
-        shadows
-        dpr={[1, 1.5]}
-        gl={{ antialias: true, powerPreference: "high-performance" }}
+        shadows={!isLowPerformance}
+        dpr={canvasDpr}
+        gl={{ antialias: !isLowPerformance, powerPreference: isLowPerformance ? "low-power" : "high-performance" }}
       >
-        <ambientLight intensity={0.8} />
-        <directionalLight position={[2, 3, 2]} intensity={1.2} castShadow />
+        <ambientLight intensity={isLowPerformance ? 0.6 : 0.8} />
+        <directionalLight
+          position={[2, 3, 2]}
+          intensity={isLowPerformance ? 0.9 : 1.2}
+          castShadow={!isLowPerformance}
+        />
         <Suspense fallback={null}>
           <Environment preset="sunset" />
           <FloatBoat 
@@ -449,6 +508,7 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
             targetPosition={boatPosition}
             initialPosition={entranceStart}
             lockHeading
+            driftStrength={driftStrength}
             onArrived={() => {
               if (boatLoaded && !boatReadyNotified.current) {
                 boatReadyNotified.current = true;
@@ -462,14 +522,14 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
             </Suspense>
           </FloatBoat>
           
-          <Waves reduceMotion={reduceMotion} />
+          <Waves reduceMotion={reduceMotion} detail={waveDetail} skipModulo={waveSkip} />
           <OrbitControls
             enabled={boatReady}
-            enablePan={!reduceMotion}
-            enableZoom={!reduceMotion}
+            enablePan={!reduceMotion && !isLowPerformance}
+            enableZoom={!reduceMotion && !isLowPerformance}
             maxPolarAngle={Math.PI / 2.2}
             target={[0, 0, 0]}
-            enableDamping
+            enableDamping={!isLowPerformance}
             dampingFactor={0.08}
           />
         </Suspense>
@@ -499,8 +559,10 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
                 <p className="text-golden-muted text-sm font-light tracking-[0.3em] uppercase font-sans">
                   The Wedding Of
                 </p>
-                <div className="foil-shimmer text-4xl md:text-5xl font-bold italic tracking-wide font-serif">
-                  {coupleNames.bride} & {coupleNames.groom}
+                <div className="foil-shimmer font-serif text-4xl sm:text-5xl md:text-6xl tracking-wide text-ivory drop-shadow-lg flex flex-wrap items-center justify-center gap-x-3 gap-y-1 leading-tight">
+                  <span className="whitespace-nowrap">{coupleNames.bride}</span>
+                  <span className="text-3xl sm:text-4xl">&amp;</span>
+                  <span className="whitespace-nowrap">{coupleNames.groom}</span>
                 </div>
                 <p className="text-blue-100/90 text-sm font-sans italic">
                   Save the date for our special celebration
@@ -567,19 +629,21 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
       {/* Names and shimmer - muncul setelah IntroOverlay hilang */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
         <motion.h1
-            initial={{ opacity: 0, y: 20, letterSpacing: "0.35em" }}
-            animate={{
-              opacity: isIntroActive ? 0 : 1,
-              y: isIntroActive ? 20 : 0,
-              letterSpacing: isIntroActive ? "0.35em" : "0.08em",
-            }}
-            transition={{ duration: 1, delay: isIntroActive ? 0 : 0.5, ease: [0.19, 1, 0.22, 1] }}
+          variants={nameContainerVariants}
+          initial="hidden"
+          animate={isIntroActive ? "hidden" : "show"}
           className="font-serif text-4xl sm:text-5xl md:text-7xl tracking-wide text-ivory drop-shadow-lg foil-shimmer flex flex-wrap items-center justify-center gap-x-4 gap-y-2 leading-tight"
           aria-label={`${coupleNames.bride} dan ${coupleNames.groom}`}
         >
-          <span className="whitespace-nowrap">{coupleNames.bride}</span>
-          <span className="text-3xl sm:text-4xl md:text-5xl">&amp;</span>
-          <span className="whitespace-nowrap">{coupleNames.groom}</span>
+          <motion.span variants={nameItemVariants} className="whitespace-nowrap">
+            {coupleNames.bride}
+          </motion.span>
+          <motion.span variants={nameItemVariants} className="text-3xl sm:text-4xl md:text-5xl">
+            &amp;
+          </motion.span>
+          <motion.span variants={nameItemVariants} className="whitespace-nowrap">
+            {coupleNames.groom}
+          </motion.span>
         </motion.h1>
         
         <motion.p 
@@ -593,7 +657,7 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: isIntroActive ? 0 : 1, y: isIntroActive ? 20 : 0 }}
-          transition={{ duration: 0.8, delay: isIntroActive ? 0 : 1.1 }}
+          transition={{ duration: taglineTransitionDuration, delay: isIntroActive ? 0 : 1.1 }}
           className="mt-6 flex items-center gap-4 text-golden-soft"
         >
           <span aria-hidden className="h-px w-16 bg-[rgba(var(--gold-rgb),0.45)]" />
