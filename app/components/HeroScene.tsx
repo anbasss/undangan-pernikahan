@@ -18,6 +18,8 @@ type Props = {
 const WATER_Y = 0.3; // Water at sea level
 const WAVE_AMP = 0.05; // must match wave height in Waves
 const BOAT_CLEARANCE = 0.5; // vertical distance from water crest to boat bottom
+const BOAT_HEADING = Math.PI / 1.4; // match BoatModel yaw so animation follows boat orientation
+const BOAT_APPROACH_DISTANCE = 6;
 
 function isPositionClose(
   a: { x: number; y: number; z: number },
@@ -92,16 +94,28 @@ function FloatBoat({
   targetPosition = { x: 0, y: 0, z: 0 },
   initialPosition = targetPosition,
   onArrived,
+  lockHeading = false,
 }: { 
   children: React.ReactNode; 
   reduceMotion?: boolean;
   targetPosition?: { x: number; y: number; z: number };
   initialPosition?: { x: number; y: number; z: number };
   onArrived?: () => void;
+  lockHeading?: boolean;
 }) {
   const ref = useRef<Group>(null!);
   const currentPosition = useRef({ ...initialPosition });
   const hasArrived = useRef(false);
+  const curveRef = useRef<THREE.CatmullRomCurve3 | null>(null);
+  const progressRef = useRef(0);
+  const animatingRef = useRef(false);
+  const yawRef = useRef(0);
+
+  useEffect(() => {
+    if (lockHeading && ref.current) {
+      yawRef.current = ref.current.rotation.y;
+    }
+  }, [lockHeading]);
 
   useEffect(() => {
     currentPosition.current = { ...initialPosition };
@@ -112,40 +126,108 @@ function FloatBoat({
 
   useEffect(() => {
     hasArrived.current = false;
-  }, [targetPosition]);
+    if (reduceMotion) {
+      curveRef.current = null;
+      animatingRef.current = false;
+      progressRef.current = 0;
+      currentPosition.current = { ...targetPosition };
+      if (ref.current) {
+        ref.current.position.set(targetPosition.x, targetPosition.y, targetPosition.z);
+      }
+      return;
+    }
+
+    const start = new THREE.Vector3(
+      currentPosition.current.x,
+      currentPosition.current.y,
+      currentPosition.current.z
+    );
+    const end = new THREE.Vector3(targetPosition.x, targetPosition.y, targetPosition.z);
+
+    if (isPositionClose(currentPosition.current, targetPosition, 0.001)) {
+      curveRef.current = null;
+      animatingRef.current = false;
+      progressRef.current = 1;
+      return;
+    }
+
+  const mid = start.clone().lerp(end, 0.5).add(new THREE.Vector3(0, 0.15, 0));
+  const control1 = start.clone().lerp(mid, 0.6);
+  const control2 = end.clone().lerp(mid, 0.6);
+
+  curveRef.current = new THREE.CatmullRomCurve3([start, control1, control2, end]);
+  curveRef.current.curveType = "centripetal";
+  curveRef.current.tension = 0;
+    progressRef.current = 0;
+    animatingRef.current = true;
+  }, [targetPosition, reduceMotion]);
   
   useFrame((state, delta) => {
     if (!ref.current) return;
     const t = state.clock.getElapsedTime();
-    const base = WATER_Y; // water baseline
+    const base = WATER_Y;
     const amp = reduceMotion ? 0 : WAVE_AMP;
     const freq = 0.8;
-    const x = 0, z = 0; // boat at origin
+    const x = 0, z = 0;
     const h = base + amp * Math.sin(freq * x + t) * Math.cos(freq * z + t);
-    const clearance = BOAT_CLEARANCE; // keep hull above peak waves
+    const clearance = BOAT_CLEARANCE;
 
-    // Lerp to target position with delta-based damping
-  const damping = reduceMotion ? 1.6 : 2.6;
-    currentPosition.current.x = THREE.MathUtils.damp(
-      currentPosition.current.x,
-      targetPosition.x,
-      damping,
-      delta
-    );
-    currentPosition.current.z = THREE.MathUtils.damp(
-      currentPosition.current.z,
-      targetPosition.z,
-      damping,
-      delta
-    );
-    
-    ref.current.position.y = h + clearance + targetPosition.y;
+    if (!reduceMotion && animatingRef.current && curveRef.current) {
+      const speed = 0.25; // normalized units per second
+      progressRef.current = Math.min(progressRef.current + delta * speed, 1);
+      const point = curveRef.current.getPointAt(progressRef.current);
+      const tangent = curveRef.current.getTangentAt(Math.max(progressRef.current - 0.001, 0));
+      currentPosition.current = { x: point.x, y: point.y, z: point.z };
+      if (!lockHeading) {
+        yawRef.current = Math.atan2(tangent.x, tangent.z);
+      }
+
+      if (progressRef.current >= 0.999) {
+        animatingRef.current = false;
+        currentPosition.current = { ...targetPosition };
+      }
+    } else {
+      const damping = reduceMotion ? 1.6 : 2.6;
+      currentPosition.current.x = THREE.MathUtils.damp(
+        currentPosition.current.x,
+        targetPosition.x,
+        damping,
+        delta
+      );
+      currentPosition.current.z = THREE.MathUtils.damp(
+        currentPosition.current.z,
+        targetPosition.z,
+        damping,
+        delta
+      );
+      currentPosition.current.y = THREE.MathUtils.damp(
+        currentPosition.current.y ?? 0,
+        targetPosition.y,
+        damping,
+        delta
+      );
+      if (!lockHeading) {
+        const heading = Math.atan2(
+          targetPosition.x - currentPosition.current.x,
+          targetPosition.z - currentPosition.current.z
+        );
+        yawRef.current = reduceMotion
+          ? 0
+          : THREE.MathUtils.damp(yawRef.current, heading, 3, delta);
+      }
+    }
+
     ref.current.position.x = currentPosition.current.x;
     ref.current.position.z = currentPosition.current.z;
-    
+    ref.current.position.y = h + clearance + targetPosition.y;
+    ref.current.rotation.y = yawRef.current;
+
     if (!reduceMotion) {
       ref.current.rotation.z = 0.03 * Math.sin(freq * x + t + Math.PI / 2);
       ref.current.rotation.x = 0.02 * Math.cos(freq * z + t + Math.PI / 2);
+    } else {
+      ref.current.rotation.x = 0;
+      ref.current.rotation.z = 0;
     }
 
     const distanceXZ = Math.hypot(
@@ -153,7 +235,7 @@ function FloatBoat({
       targetPosition.z - currentPosition.current.z
     );
 
-    if (!hasArrived.current && distanceXZ < 0.05) {
+    if (!hasArrived.current && !animatingRef.current && distanceXZ < 0.05) {
       hasArrived.current = true;
       onArrived?.();
     }
@@ -208,9 +290,21 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
   const params = useSearchParams();
   const [mounted, setMounted] = useState(false);
   const [isIntroActive, setIsIntroActive] = useState(true);
-  const entranceStart = useMemo(() => ({ x: 6, y: 0, z: 0 }), []);
   const centerPosition = useMemo(() => ({ x: 0, y: 0, z: 0 }), []);
-  const [boatPosition, setBoatPosition] = useState(entranceStart); // Kapal mulai dari sisi kanan
+  const approachDirection = useMemo(() => {
+    const forward = new THREE.Vector3(0, 0, -1);
+    forward.applyAxisAngle(new THREE.Vector3(0, 1, 0), BOAT_HEADING);
+    return { x: forward.x, y: forward.y, z: forward.z };
+  }, []);
+  const entranceStart = useMemo(
+    () => ({
+      x: centerPosition.x - approachDirection.x * BOAT_APPROACH_DISTANCE,
+      y: centerPosition.y - approachDirection.y * BOAT_APPROACH_DISTANCE,
+      z: centerPosition.z - approachDirection.z * BOAT_APPROACH_DISTANCE,
+    }),
+    [centerPosition, approachDirection]
+  );
+  const [boatPosition, setBoatPosition] = useState(entranceStart); // Kapal memulai di belakang mengikuti orientasi awal
   const [boatLoaded, setBoatLoaded] = useState(false);
   const [boatReady, setBoatReady] = useState(false);
   const boatReadyNotified = useRef(false);
@@ -322,6 +416,7 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
             reduceMotion={reduceMotion} 
             targetPosition={boatPosition}
             initialPosition={entranceStart}
+            lockHeading
             onArrived={() => {
               if (boatLoaded && !boatReadyNotified.current) {
                 boatReadyNotified.current = true;
@@ -393,19 +488,38 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
                   You&apos;re Invited to Our Wedding Celebration
                 </p>
 
-                {boatReady ? (
-                  <button
-                    onClick={openInvitation}
-                    className="w-full py-4 px-6 bg-gradient-to-r from-golden to-[#f3d27c] text-[#0b2a4a] font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 focus:ring-4 focus:ring-golden/50 font-sans"
-                    aria-label={`Buka undangan pernikahan ${coupleNames.bride} dan ${coupleNames.groom}`}
-                  >
-                    Buka Undangan
-                  </button>
-                ) : (
-                  <div className="w-full py-4 px-6 bg-blue-900/60 border border-golden/30 text-golden/80 rounded-xl font-sans">
-                    Menunggu kapal tiba di dermaga...
-                  </div>
-                )}
+                <AnimatePresence mode="wait" initial={false}>
+                  {boatReady ? (
+                    <motion.button
+                      key="open-invite"
+                      initial={{ opacity: 0, y: 18 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -18 }}
+                      transition={{ duration: 0.6, ease: "easeOut" }}
+                      onClick={openInvitation}
+                      className="w-full py-4 px-6 bg-gradient-to-r from-golden to-[#f3d27c] text-[#0b2a4a] font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 focus:ring-4 focus:ring-golden/50 font-sans"
+                      aria-label={`Buka undangan pernikahan ${coupleNames.bride} dan ${coupleNames.groom}`}
+                    >
+                      Buka Undangan
+                    </motion.button>
+                  ) : (
+                    <motion.div
+                      key="loading"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 0.6, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.5, ease: "easeOut" }}
+                      className="flex items-center justify-center gap-2 text-golden/80"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <span className="inline-flex h-2 w-2 rounded-full bg-golden animate-pulse" />
+                      <span className="inline-flex h-2 w-2 rounded-full bg-golden/80 animate-pulse" style={{ animationDelay: "120ms" }} />
+                      <span className="inline-flex h-2 w-2 rounded-full bg-golden/60 animate-pulse" style={{ animationDelay: "240ms" }} />
+                      <span className="sr-only">Kapal sedang menuju dermaga</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               <div className="flex items-center gap-2 text-golden text-sm">
@@ -424,10 +538,12 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: isIntroActive ? 0 : 1, y: isIntroActive ? 20 : 0 }}
           transition={{ duration: 0.8, delay: isIntroActive ? 0 : 0.5 }}
-          className="font-serif text-5xl md:text-7xl tracking-wide text-ivory drop-shadow-lg foil-shimmer"
+          className="font-serif text-4xl sm:text-5xl md:text-7xl tracking-wide text-ivory drop-shadow-lg foil-shimmer flex flex-wrap items-center justify-center gap-x-4 gap-y-2 leading-tight"
           aria-label={`${coupleNames.bride} dan ${coupleNames.groom}`}
         >
-          {coupleNames.bride} & {coupleNames.groom}
+          <span className="whitespace-nowrap">{coupleNames.bride}</span>
+          <span className="text-3xl sm:text-4xl md:text-5xl">&amp;</span>
+          <span className="whitespace-nowrap">{coupleNames.groom}</span>
         </motion.h1>
         
         <motion.p 
