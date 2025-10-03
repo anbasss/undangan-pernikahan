@@ -8,9 +8,27 @@ export default function AudioPlayer() {
   useEffect(() => {
     const a = audioRef.current;
     if (!a) return;
-    if (on) a.play().catch(() => {});
-    else a.pause();
+    if (on) {
+      a.play().catch(() => {
+        setOn(false);
+      });
+    } else {
+      a.pause();
+    }
   }, [on]);
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const { detail } = event as CustomEvent<{ playMusic?: boolean }>;
+      const shouldPlay = detail?.playMusic !== false;
+      setOn(shouldPlay);
+    };
+
+    window.addEventListener("invitation-open", handler as EventListener);
+    return () => {
+      window.removeEventListener("invitation-open", handler as EventListener);
+    };
+  }, []);
   return (
     <div className="fixed z-40 bottom-4 right-4">
       <button
