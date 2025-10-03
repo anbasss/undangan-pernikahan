@@ -60,10 +60,10 @@ export default function WeddingEvents() {
         <InvitationCard
           title="Resepsi Pernikahan"
           date={resepsiDate}
-          time="11:00 WITA - 15:00 WITA"
-          location="Ballroom Hotel Pantai Gapura"
-          address="Jl. Pantai Losari No. 5, Makassar, Sulawesi Selatan"
-          mapsUrl="https://maps.google.com/?q=Hotel+Pantai+Gapura+Makassar"
+          time="09:00 WITA - 17:00 WITA"
+          location="CABBUE/ABEKKAE"
+          address="Sebelah Utara Permandian Alam Ompo , Soppeng, Sulawesi Selatan"
+          mapsUrl="https://maps.app.goo.gl/9u4NRZ6TtZ7HjMB47"
           delay={0.4}
           backgroundImage="/gambar2.jpg"
         />

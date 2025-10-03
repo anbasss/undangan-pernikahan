@@ -113,8 +113,8 @@ export default function WeFoundLove() {
                 </p>
               </div>
               <div className="text-ivory/80 text-sm leading-relaxed font-sans">
-                <p className="font-semibold">Bapak [Nama Ayah] &</p>
-                <p className="font-semibold">Ibu [Nama Ibu]</p>
+                <p className="font-semibold">Bapak Alm. Andi Muh. Kadri (Bau Cubbe), SE &</p>
+                <p className="font-semibold">Ibu Andi Muniwar, SE</p>
               </div>
               
               {/* Decorative rope line */}
@@ -149,8 +149,8 @@ export default function WeFoundLove() {
                 </p>
               </div>
               <div className="text-ivory/80 text-sm leading-relaxed font-sans">
-                <p className="font-semibold">Bapak [Nama Ayah] &</p>
-                <p className="font-semibold">Ibu [Nama Ibu]</p>
+                <p className="font-semibold">Bapakk Muh. Said Razak &</p>
+                <p className="font-semibold">Ibu Andi Panangngareng</p>
               </div>
               
               {/* Decorative rope line */}
