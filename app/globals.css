@@ -5,8 +5,11 @@
   --blue-deep: #0b2a4a; /* navy/ocean */
   --blue-sea: #1f355e; /* deep sea */
   --ivory: #f7f3ea; /* ivory white */
-  --gold: #d9c499; /* warm gold */
-  --gold-bright: #f3d27c; /* brighter highlight */
+  --gold: #cbb98a; /* muted maritime gold */
+  --gold-bright: #e6dcb3; /* soft highlight */
+  --gold-soft: #f4edd6; /* pastel glow */
+  --gold-deep: #a48d5c; /* accent frame */
+  --gold-rgb: 203, 185, 138;
 
   --background: var(--blue-deep);
   --foreground: var(--ivory);
@@ -28,10 +31,38 @@ body { background: var(--background); color: var(--foreground); font-family: var
 .bg-ocean { background-image: var(--ocean-grad); }
 .text-ivory { color: var(--ivory); }
 .text-golden { color: var(--gold-bright); }
+.text-golden-muted { color: var(--gold); }
+.text-golden-soft { color: var(--gold-soft); }
+
+.border-golden { border-color: var(--gold); }
+.border-golden-soft { border-color: rgba(203, 185, 138, 0.45); }
+
+.bg-golden { background-color: var(--gold); }
+.bg-golden-soft { background-color: var(--gold-soft); }
+.bg-golden-deep { background-color: rgba(164, 141, 92, 0.85); }
+.ring-golden-soft { box-shadow: 0 0 0 4px rgba(203, 185, 138, 0.4); }
+.shadow-golden-soft { box-shadow: 0 18px 42px rgba(var(--gold-rgb), 0.18); }
+.glow-golden { box-shadow: 0 0 28px rgba(var(--gold-rgb), 0.45), 0 8px 24px rgba(11, 42, 74, 0.35); }
+.gradient-panel { background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0)); }
+
+.ornate-panel { position: relative; }
+.ornate-panel::before,
+.ornate-panel::after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  width: 12px;
+  background: linear-gradient(180deg, rgba(var(--gold-rgb), 0) 0%, rgba(var(--gold-rgb), 0.5) 50%, rgba(var(--gold-rgb), 0) 100%);
+  opacity: 0.35;
+  pointer-events: none;
+}
+.ornate-panel::before { left: -10px; border-radius: 999px 0 0 999px; }
+.ornate-panel::after { right: -10px; border-radius: 0 999px 999px 0; }
 
 /* Foil shimmer effect for names */
 .foil-shimmer {
-  background: linear-gradient(100deg, #caa969 10%, #f3d27c 30%, #fff6d6 45%, #caa969 60%, #f3d27c 85%);
+  background: linear-gradient(100deg, var(--gold) 10%, var(--gold-bright) 35%, var(--gold-soft) 55%, var(--gold) 80%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -42,11 +73,11 @@ body { background: var(--background); color: var(--foreground); font-family: var
 
 /* Parchment scroll */
 .parchment { background: radial-gradient(circle at 30% 20%, #fff8e8, #f0e2c2); box-shadow: 0 10px 30px rgba(0,0,0,0.2) inset, 0 8px 20px rgba(0,0,0,0.2); border: 2px solid #e6d3a1; }
-.nautical-card { background: rgba(255,255,255,0.6); padding: 12px; border-radius: 10px; border: 1px dashed #caa969; }
+.nautical-card { background: rgba(255,255,255,0.6); padding: 12px; border-radius: 10px; border: 1px dashed var(--gold); }
 
 /* Rope borders */
 .rope-card { position: relative; padding: 16px; border-radius: 16px; background: rgba(7,25,49,0.6); }
-.rope-card::before { content: ""; position: absolute; inset: -6px; border: 6px solid transparent; border-image: linear-gradient(45deg,#caa969,#f3d27c,#caa969) 1; border-radius: 20px; pointer-events: none; }
+.rope-card::before { content: ""; position: absolute; inset: -6px; border: 6px solid transparent; border-image: linear-gradient(45deg,var(--gold),var(--gold-bright),var(--gold)) 1; border-radius: 20px; pointer-events: none; }
 
 /* Compass background */
 .compass { width: 520px; height: 520px; border-radius: 999px; background:
@@ -61,10 +92,10 @@ body { background: var(--background); color: var(--foreground); font-family: var
 .nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.4); color: white; width: 40px; height: 40px; border-radius: 999px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,0.3); }
 
 /* Nautical map frame */
-.nautical-frame { position: relative; background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); border: 8px solid transparent; border-image: linear-gradient(45deg,#7a623a,#b9935a,#e0c890,#b9935a) 1; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+.nautical-frame { position: relative; background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); border: 8px solid transparent; border-image: linear-gradient(45deg,var(--gold-deep),var(--gold),var(--gold-soft),var(--gold)) 1; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
 
 /* Wheel countdown */
-.wheel { width: 320px; aspect-ratio: 1; border-radius: 999px; position: relative; border: 12px solid #7a623a; box-shadow: 0 8px 18px rgba(0,0,0,0.5); }
-.wheel::before, .wheel::after { content: ""; position: absolute; inset: -22px; border: 10px dashed #b9935a; border-radius: 999px; }
+.wheel { width: 320px; aspect-ratio: 1; border-radius: 999px; position: relative; border: 12px solid var(--gold-deep); box-shadow: 0 8px 18px rgba(0,0,0,0.5); }
+.wheel::before, .wheel::after { content: ""; position: absolute; inset: -22px; border: 10px dashed var(--gold); border-radius: 999px; }
 .wheel-inner { position: absolute; inset: 18px; border-radius: 999px; background: rgba(7,25,49,0.7); display: grid; place-items: center; }
 

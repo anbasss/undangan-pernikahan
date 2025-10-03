@@ -110,6 +110,7 @@ function FloatBoat({
   const progressRef = useRef(0);
   const animatingRef = useRef(false);
   const yawRef = useRef(0);
+  const driftPhase = useRef(Math.random() * Math.PI * 2);
 
   useEffect(() => {
     if (lockHeading && ref.current) {
@@ -217,8 +218,12 @@ function FloatBoat({
       }
     }
 
-    ref.current.position.x = currentPosition.current.x;
-    ref.current.position.z = currentPosition.current.z;
+  const driftEnabled = !reduceMotion && !animatingRef.current;
+  const driftX = driftEnabled ? 0.08 * Math.sin(t * 0.25 + driftPhase.current) : 0;
+  const driftZ = driftEnabled ? 0.05 * Math.cos(t * 0.22 + driftPhase.current) : 0;
+
+  ref.current.position.x = currentPosition.current.x + driftX;
+  ref.current.position.z = currentPosition.current.z + driftZ;
     ref.current.position.y = h + clearance + targetPosition.y;
     ref.current.rotation.y = yawRef.current;
 
@@ -395,9 +400,36 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
     <section className="relative h-screen overflow-hidden">
       {/* Golden rope border */}
       <div aria-hidden className="pointer-events-none absolute inset-0 border-[10px] rounded-[24px]" style={{
-        borderImage: "linear-gradient(45deg,#caa969,#f3d27c,#caa969) 1",
+        borderImage: "linear-gradient(45deg,var(--gold),var(--gold-bright),var(--gold)) 1",
         boxShadow: "0 0 40px rgba(255,215,130,0.15) inset",
       }} />
+
+      {/* Animated gradient sky */}
+      <motion.div
+        aria-hidden
+        className="absolute inset-0 -z-20"
+        initial={{ backgroundPosition: "0% 50%" }}
+        animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+        style={{
+          backgroundImage:
+            "linear-gradient(135deg, rgba(5,20,42,0.95) 0%, rgba(13,54,94,0.92) 45%, rgba(32,110,173,0.85) 70%, rgba(112,177,224,0.75) 100%)",
+          backgroundSize: "200% 200%",
+        }}
+      />
+
+      {/* Gentle wave texture */}
+      <div
+        aria-hidden
+        className="absolute inset-0 -z-10 opacity-15"
+        style={{
+          backgroundImage:
+            "url('data:image/svg+xml,%3Csvg width=\"240\" height=\"240\" viewBox=\"0 0 240 240\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cpath d=\"M0 120c30-20 60-20 90 0s60 20 90 0 60-20 90 0v120H0V120z\" fill=\"rgba(20,70,120,0.22)\"/%3E%3C/svg%3E')",
+          backgroundRepeat: "repeat",
+          backgroundSize: "320px 320px",
+          mixBlendMode: "overlay",
+        }}
+      />
 
       <Canvas
         camera={{
@@ -464,7 +496,7 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
             >
               {/* The Wedding Of */}
               <div className="text-center space-y-4">
-                <p className="text-golden/80 text-sm font-light tracking-[0.3em] uppercase font-sans">
+                <p className="text-golden-muted text-sm font-light tracking-[0.3em] uppercase font-sans">
                   The Wedding Of
                 </p>
                 <div className="foil-shimmer text-4xl md:text-5xl font-bold italic tracking-wide font-serif">
@@ -477,7 +509,7 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
 
               <div className="space-y-2 text-blue-100">
                 <p className="font-medium font-sans">Kepada Yth:</p>
-                <p className="text-golden text-lg font-semibold px-4 py-2 bg-white/10 rounded-lg border border-golden/30 font-sans">
+                <p className="text-golden text-lg font-semibold px-4 py-2 bg-white/10 rounded-lg border border-golden-soft font-sans">
                   {name || "Nama Tamu"}
                 </p>
               </div>
@@ -497,7 +529,7 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
                       exit={{ opacity: 0, y: -18 }}
                       transition={{ duration: 0.6, ease: "easeOut" }}
                       onClick={openInvitation}
-                      className="w-full py-4 px-6 bg-gradient-to-r from-golden to-[#f3d27c] text-[#0b2a4a] font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 focus:ring-4 focus:ring-golden/50 font-sans"
+                      className="w-full py-4 px-6 bg-gradient-to-r from-[var(--gold)] via-[var(--gold-bright)] to-[var(--gold-soft)] text-[#0b2a4a] font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 focus:ring-4 focus:ring-[rgba(203,185,138,0.45)] font-sans"
                       aria-label={`Buka undangan pernikahan ${coupleNames.bride} dan ${coupleNames.groom}`}
                     >
                       Buka Undangan
@@ -509,13 +541,13 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
                       animate={{ opacity: 0.6, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ duration: 0.5, ease: "easeOut" }}
-                      className="flex items-center justify-center gap-2 text-golden/80"
+                      className="flex items-center justify-center gap-2 text-golden-muted"
                       role="status"
                       aria-live="polite"
                     >
                       <span className="inline-flex h-2 w-2 rounded-full bg-golden animate-pulse" />
-                      <span className="inline-flex h-2 w-2 rounded-full bg-golden/80 animate-pulse" style={{ animationDelay: "120ms" }} />
-                      <span className="inline-flex h-2 w-2 rounded-full bg-golden/60 animate-pulse" style={{ animationDelay: "240ms" }} />
+                      <span className="inline-flex h-2 w-2 rounded-full bg-golden-soft animate-pulse" style={{ animationDelay: "120ms" }} />
+                      <span className="inline-flex h-2 w-2 rounded-full bg-golden-deep animate-pulse" style={{ animationDelay: "240ms" }} />
                       <span className="sr-only">Kapal sedang menuju dermaga</span>
                     </motion.div>
                   )}
@@ -523,9 +555,9 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
               </div>
 
               <div className="flex items-center gap-2 text-golden text-sm">
-                <span className="h-px flex-1 bg-golden/40" aria-hidden />
+                <span className="h-px flex-1 bg-[rgba(203,185,138,0.35)]" aria-hidden />
                 <span aria-hidden>⎯⎯⎯⎯⎯⎯⎯</span>
-                <span className="h-px flex-1 bg-golden/40" aria-hidden />
+                <span className="h-px flex-1 bg-[rgba(203,185,138,0.35)]" aria-hidden />
               </div>
             </motion.div>
           </motion.div>
@@ -535,9 +567,13 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
       {/* Names and shimmer - muncul setelah IntroOverlay hilang */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
         <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: isIntroActive ? 0 : 1, y: isIntroActive ? 20 : 0 }}
-          transition={{ duration: 0.8, delay: isIntroActive ? 0 : 0.5 }}
+            initial={{ opacity: 0, y: 20, letterSpacing: "0.35em" }}
+            animate={{
+              opacity: isIntroActive ? 0 : 1,
+              y: isIntroActive ? 20 : 0,
+              letterSpacing: isIntroActive ? "0.35em" : "0.08em",
+            }}
+            transition={{ duration: 1, delay: isIntroActive ? 0 : 0.5, ease: [0.19, 1, 0.22, 1] }}
           className="font-serif text-4xl sm:text-5xl md:text-7xl tracking-wide text-ivory drop-shadow-lg foil-shimmer flex flex-wrap items-center justify-center gap-x-4 gap-y-2 leading-tight"
           aria-label={`${coupleNames.bride} dan ${coupleNames.groom}`}
         >
@@ -558,11 +594,13 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: isIntroActive ? 0 : 1, y: isIntroActive ? 20 : 0 }}
           transition={{ duration: 0.8, delay: isIntroActive ? 0 : 1.1 }}
-          className="mt-6 flex items-center gap-3 text-blue-100"
+          className="mt-6 flex items-center gap-4 text-golden-soft"
         >
-          <span aria-hidden className="h-px w-16 bg-blue-100/40" />
-          <span className="font-sans italic text-sm">Where love sails forever</span>
-          <span aria-hidden className="h-px w-16 bg-blue-100/40" />
+          <span aria-hidden className="h-px w-16 bg-[rgba(var(--gold-rgb),0.45)]" />
+          <span className="font-serif italic text-base text-[rgba(var(--gold-rgb),0.9)] drop-shadow-[0_2px_10px_rgba(0,0,0,0.45)] tracking-wide">
+            Where love sails forever
+          </span>
+          <span aria-hidden className="h-px w-16 bg-[rgba(var(--gold-rgb),0.45)]" />
         </motion.div>
       </div>
     </section>

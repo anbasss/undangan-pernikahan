@@ -23,13 +23,13 @@ export default function ThankYouSection() {
           className="relative"
         >
           {/* Elegant border decoration */}
-          <div className="absolute inset-0 rounded-3xl border-4 border-dashed border-golden/30"></div>
-          <div className="absolute -top-2 -left-2 w-6 h-6 bg-golden rounded-full opacity-60"></div>
-          <div className="absolute -top-2 -right-2 w-6 h-6 bg-golden rounded-full opacity-60"></div>
-          <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-golden rounded-full opacity-60"></div>
-          <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-golden rounded-full opacity-60"></div>
+          <div className="absolute inset-0 rounded-3xl border-4 border-dashed border-[rgba(var(--gold-rgb),0.35)]"></div>
+          <div className="absolute -top-2 -left-2 w-6 h-6 bg-[var(--gold)] rounded-full opacity-60"></div>
+          <div className="absolute -top-2 -right-2 w-6 h-6 bg-[var(--gold)] rounded-full opacity-60"></div>
+          <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-[var(--gold)] rounded-full opacity-60"></div>
+          <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-[var(--gold)] rounded-full opacity-60"></div>
           
-          <div className="relative p-8 md:p-12 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-3xl border border-golden/30 shadow-2xl">
+          <div className="relative p-8 md:p-12 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-3xl border border-[rgba(var(--gold-rgb),0.35)] shadow-2xl">
             {/* Decorative lines at top */}
           
             

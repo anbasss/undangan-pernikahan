@@ -69,9 +69,9 @@ export default function IntroOverlay({ coupleNames }: { coupleNames: { bride: st
             exit={{ y: -40, opacity: 0, scale: 0.98, rotate: -2 }}
             transition={{ type: "spring", stiffness: 140, damping: 18 }}
           >
-            <div aria-hidden className="absolute inset-0 -z-10 rounded-[28px] border-[10px]" style={{ borderImage: "linear-gradient(45deg,#caa969,#f3d27c,#caa969) 1" }} />
+            <div aria-hidden className="absolute inset-0 -z-10 rounded-[28px] border-[10px]" style={{ borderImage: "linear-gradient(45deg,var(--gold),var(--gold-bright),var(--gold)) 1" }} />
             <div className="rounded-[18px] bg-blue-900/60 backdrop-blur-md px-6 py-8 border border-blue-200/30 shadow-2xl">
-              <div className="text-amber-300 text-4xl mb-2">⚓</div>
+              <div className="text-golden text-4xl mb-2">⚓</div>
               <div className="font-[var(--font-display-serif)] text-3xl sm:text-4xl md:text-5xl foil-shimmer flex flex-wrap items-center justify-center gap-x-3 gap-y-1 leading-tight">
                 <span className="whitespace-nowrap">{coupleNames.bride}</span>
                 <span className="text-2xl sm:text-3xl">&amp;</span>
@@ -98,7 +98,7 @@ export default function IntroOverlay({ coupleNames }: { coupleNames: { bride: st
                       // Preload boat model when user hovers
                       window.dispatchEvent(new CustomEvent('preload-boat'));
                     }}
-                    className="mt-6 inline-flex items-center gap-2 rounded-full px-6 py-3 bg-amber-400 text-blue-950 font-semibold shadow hover:bg-amber-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-400 transition-all duration-200"
+                    className="mt-6 inline-flex items-center gap-2 rounded-full px-6 py-3 bg-[var(--gold-bright)] text-blue-950 font-semibold shadow hover:bg-[rgba(var(--gold-rgb),0.85)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[rgba(var(--gold-rgb),0.45)] transition-all duration-200"
                   >
                     Buka Undangan
                   </motion.button>
@@ -109,14 +109,14 @@ export default function IntroOverlay({ coupleNames }: { coupleNames: { bride: st
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="mt-6 inline-flex items-center gap-2 rounded-full px-6 py-3 bg-blue-900/60 text-amber-200 border border-amber-200/40 shadow-inner"
+                    className="mt-6 inline-flex items-center gap-2 rounded-full px-6 py-3 bg-blue-900/60 text-golden-soft border border-[rgba(var(--gold-rgb),0.35)] shadow-inner"
                   >
-                    <span className="inline-block h-2 w-2 rounded-full bg-amber-300 animate-pulse" aria-hidden />
+                    <span className="inline-block h-2 w-2 rounded-full bg-golden animate-pulse" aria-hidden />
                     Kapal sedang berlayar menuju dermaga...
                   </motion.div>
                 )}
               </AnimatePresence>
-              <div aria-hidden className="mt-4 text-amber-400">⎯⎯⎯⛵⎯⎯⎯</div>
+              <div aria-hidden className="mt-4 text-golden">⎯⎯⎯⛵⎯⎯⎯</div>
             </div>
           </motion.div>
         </motion.div>

@@ -37,29 +37,29 @@ export default function Countdown({ targetDate }: { targetDate: Date }) {
           background: conic-gradient(
             from 0deg,
             transparent 0deg 15deg,
-            #caa969 15deg 30deg,
+            #cbb98a 15deg 30deg,
             transparent 30deg 45deg,
-            #caa969 45deg 60deg,
+            #cbb98a 45deg 60deg,
             transparent 60deg 75deg,
-            #caa969 75deg 90deg,
+            #cbb98a 75deg 90deg,
             transparent 90deg 105deg,
-            #caa969 105deg 120deg,
+            #cbb98a 105deg 120deg,
             transparent 120deg 135deg,
-            #caa969 135deg 150deg,
+            #cbb98a 135deg 150deg,
             transparent 150deg 165deg,
-            #caa969 165deg 180deg,
+            #cbb98a 165deg 180deg,
             transparent 180deg 195deg,
-            #caa969 195deg 210deg,
+            #cbb98a 195deg 210deg,
             transparent 210deg 225deg,
-            #caa969 225deg 240deg,
+            #cbb98a 225deg 240deg,
             transparent 240deg 255deg,
-            #caa969 255deg 270deg,
+            #cbb98a 255deg 270deg,
             transparent 270deg 285deg,
-            #caa969 285deg 300deg,
+            #cbb98a 285deg 300deg,
             transparent 300deg 315deg,
-            #caa969 315deg 330deg,
+            #cbb98a 315deg 330deg,
             transparent 330deg 345deg,
-            #caa969 345deg 360deg
+            #cbb98a 345deg 360deg
           );
           pointer-events: none;
         }
@@ -70,7 +70,7 @@ export default function Countdown({ targetDate }: { targetDate: Date }) {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="rotating-gear relative">
             <div className="gear-teeth"></div>
-            <div className="w-64 h-64 rounded-full bg-gradient-to-br from-golden/20 to-golden/10 border-4 border-golden/30"></div>
+            <div className="w-64 h-64 rounded-full bg-gradient-to-br from-[rgba(var(--gold-rgb),0.2)] to-[rgba(var(--gold-rgb),0.1)] border-4 border-[rgba(var(--gold-rgb),0.32)]"></div>
           </div>
         </div>
         

@@ -16,18 +16,18 @@ export default function EventDetails() {
       <h3 className="font-[var(--font-display-serif)] text-3xl md:text-4xl text-center text-ivory">Detail Acara</h3>
       <div className="mt-6 grid md:grid-cols-3 gap-6 text-blue-100">
         <div className="rope-card">
-          <div className="text-amber-300 text-2xl">⚓</div>
-          <div className="mt-2 text-sm uppercase tracking-widest text-amber-200">Tanggal</div>
+          <div className="text-golden text-2xl">⚓</div>
+          <div className="mt-2 text-sm uppercase tracking-widest text-golden-soft">Tanggal</div>
           <div className="text-lg">Sabtu, 20 Desember 2025</div>
         </div>
         <div className="rope-card">
-          <div className="text-amber-300 text-2xl">🕰️</div>
-          <div className="mt-2 text-sm uppercase tracking-widest text-amber-200">Waktu</div>
+          <div className="text-golden text-2xl">🕰️</div>
+          <div className="mt-2 text-sm uppercase tracking-widest text-golden-soft">Waktu</div>
           <div className="text-lg">10.00 - 13.00 WIB</div>
         </div>
         <div className="rope-card">
-          <div className="text-amber-300 text-2xl">📍</div>
-          <div className="mt-2 text-sm uppercase tracking-widest text-amber-200">Lokasi</div>
+          <div className="text-golden text-2xl">📍</div>
+          <div className="mt-2 text-sm uppercase tracking-widest text-golden-soft">Lokasi</div>
           <div className="text-lg">Pelabuhan Bahagia, Jakarta</div>
         </div>
       </div>

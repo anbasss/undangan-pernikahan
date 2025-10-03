@@ -2,6 +2,7 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import InvitationCard from "./InvitationCard";
+import { FaRegHeart } from "react-icons/fa";
 
 export default function WeddingEvents() {
   const [akadDate, setAkadDate] = useState<string>("");
@@ -39,9 +40,9 @@ export default function WeddingEvents() {
           Acara Pernikahan
         </h2>
         <div className="flex items-center justify-center gap-4 text-blue-100/60">
-          <span aria-hidden className="h-px w-16 bg-golden/40" />
+          <span aria-hidden className="h-px w-16 bg-[rgba(var(--gold-rgb),0.3)]" />
           <span aria-hidden></span>
-          <span aria-hidden className="h-px w-16 bg-golden/40" />
+          <span aria-hidden className="h-px w-16 bg-[rgba(var(--gold-rgb),0.3)]" />
         </div>
       </motion.div>
 
@@ -55,6 +56,7 @@ export default function WeddingEvents() {
           mapsUrl="https://maps.google.com/?q=Mesjid+Salokaraja"
           delay={0.2}
           backgroundImage="/gambar1.jpg"
+          direction="left"
         />
 
         <InvitationCard
@@ -66,6 +68,7 @@ export default function WeddingEvents() {
           mapsUrl="https://maps.app.goo.gl/9u4NRZ6TtZ7HjMB47"
           delay={0.4}
           backgroundImage="/gambar2.jpg"
+          direction="right"
         />
       </div>
 
@@ -74,15 +77,20 @@ export default function WeddingEvents() {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.6 }}
         viewport={{ once: true }}
-        className="text-center mt-12 p-6 bg-white/5 backdrop-blur-sm rounded-2xl border border-golden/20"
+        className="text-center mt-12 p-6 bg-gradient-to-br from-white/8 to-white/3 backdrop-blur-sm rounded-2xl border border-[rgba(var(--gold-rgb),0.25)] shadow-golden-soft"
       >
-        <p className="text-ivory/80 text-sm md:text-base leading-relaxed font-sans">
+        <div className="mb-4 flex items-center justify-center gap-3 text-golden">
+          <span aria-hidden className="h-px w-8 bg-[rgba(var(--gold-rgb),0.35)]"></span>
+          <FaRegHeart className="text-lg" aria-hidden />
+          <span aria-hidden className="h-px w-8 bg-[rgba(var(--gold-rgb),0.35)]"></span>
+        </div>
+        <p className="text-ivory/85 text-sm md:text-base leading-relaxed font-sans">
           Merupakan suatu kebahagiaan dan kehormatan bagi kami, apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu kepada kedua mempelai.
         </p>
         <div className="mt-4 flex items-center justify-center gap-3 text-golden">
-          <span aria-hidden></span>
+          <span aria-hidden className="h-px w-10 bg-[rgba(var(--gold-rgb),0.25)]"></span>
           <span className="text-sm font-semibold font-sans">Jazakumullahu Khairan</span>
-          <span aria-hidden></span>
+          <span aria-hidden className="h-px w-10 bg-[rgba(var(--gold-rgb),0.25)]"></span>
         </div>
       </motion.div>
     </section>

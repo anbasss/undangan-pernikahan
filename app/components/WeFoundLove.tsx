@@ -1,5 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
+import { FaRegHeart } from "react-icons/fa";
 
 export default function WeFoundLove() {
   return (
@@ -12,6 +13,7 @@ export default function WeFoundLove() {
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='7' cy='7' r='2'/%3E%3Ccircle cx='13' cy='13' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
         }}
       />
+      <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-transparent via-[rgba(var(--gold-rgb),0.08)] to-transparent" />
 
       {/* Main Content */}
       <div className="relative z-10 text-center">
@@ -27,8 +29,8 @@ export default function WeFoundLove() {
             We Found Love
           </h2>
           <div className="flex items-center justify-center gap-4 text-blue-100/60">
-            <span aria-hidden className="h-px w-16 bg-golden/40" />
-            <span aria-hidden className="h-px w-16 bg-golden/40" />
+            <span aria-hidden className="h-px w-20 bg-[rgba(var(--gold-rgb),0.25)]" />
+            <span aria-hidden className="h-px w-20 bg-[rgba(var(--gold-rgb),0.25)]" />
           </div>
         </motion.div>
 
@@ -41,13 +43,13 @@ export default function WeFoundLove() {
           className="mb-12 relative"
         >
           {/* Nautical border decoration */}
-          <div className="absolute inset-0 rounded-3xl border-4 border-dashed border-golden/30"></div>
-          <div className="absolute -top-2 -left-2 w-6 h-6 bg-golden rounded-full opacity-60"></div>
-          <div className="absolute -top-2 -right-2 w-6 h-6 bg-golden rounded-full opacity-60"></div>
-          <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-golden rounded-full opacity-60"></div>
-          <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-golden rounded-full opacity-60"></div>
-          
-          <div className="relative p-8 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-3xl border border-golden/30 shadow-2xl">
+          <div className="absolute inset-0 rounded-3xl border-4 border-dashed border-[rgba(var(--gold-rgb),0.28)]"></div>
+          <div className="absolute -top-2 -left-3 w-6 h-6 bg-[var(--gold)] rounded-full opacity-50"></div>
+          <div className="absolute -top-2 -right-3 w-6 h-6 bg-[var(--gold)] rounded-full opacity-50"></div>
+          <div className="absolute -bottom-2 -left-3 w-6 h-6 bg-[var(--gold)] rounded-full opacity-50"></div>
+          <div className="absolute -bottom-2 -right-3 w-6 h-6 bg-[var(--gold)] rounded-full opacity-50"></div>
+
+          <div className="relative ornate-panel px-7 py-6 md:px-9 md:py-7 bg-gradient-to-br from-white/12 to-white/5 backdrop-blur-sm rounded-3xl border border-[rgba(var(--gold-rgb),0.28)] shadow-golden-soft">
             <div className="text-right mb-6 font-arabic text-xl md:text-2xl leading-relaxed text-golden">
               وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً ۚ إِنَّ فِي ذَٰلِكَ لَآيَاتٍ لِّقَوْمٍ يَتَفَكَّرُونَ
             </div>
@@ -77,13 +79,13 @@ export default function WeFoundLove() {
         {/* Couple Details */}
         <div className="grid md:grid-cols-2 gap-8 md:gap-12 max-w-4xl mx-auto relative">
           {/* Center & Symbol - Only visible on desktop */}
-          <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+          <div className=" absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
             <motion.div
               initial={{ opacity: 0, scale: 0.5, rotate: -180 }}
               whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
               transition={{ duration: 1, delay: 1, type: "spring", bounce: 0.4 }}
               viewport={{ once: true }}
-              className="w-16 h-16 bg-gradient-to-br from-golden via-golden/90 to-golden/70 rounded-full flex items-center justify-center shadow-2xl border-4 border-white/20 backdrop-blur-sm"
+              className="w-16 h-16 bg-gradient-to-br from-[var(--gold)] via-[rgba(var(--gold-rgb),0.7)] to-[rgba(var(--gold-rgb),0.45)] rounded-full flex items-center justify-center glow-golden border-4 border-white/20 backdrop-blur-sm"
             >
               <span className="text-white font-serif text-2xl font-bold">&</span>
             </motion.div>
@@ -97,13 +99,14 @@ export default function WeFoundLove() {
             viewport={{ once: true }}
             className="relative group"
           >
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-golden/20 via-transparent to-golden/10 p-0.5">
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[rgba(var(--gold-rgb),0.2)] via-transparent to-[rgba(var(--gold-rgb),0.12)] p-0.5">
               <div className="w-full h-full rounded-3xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm"></div>
             </div>
             
-            <div className="relative text-center p-8 border border-golden/30 rounded-3xl shadow-2xl group-hover:shadow-golden/20 transition-all duration-300">
+            <div className="relative text-center p-8 border border-[rgba(var(--gold-rgb),0.28)] rounded-3xl shadow-2xl group-hover:shadow-[0_16px_32px_rgba(var(--gold-rgb),0.18)] transition-all duration-300">
               <div className="mb-6">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-golden/30 to-golden/10 flex items-center justify-center text-2xl">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-[rgba(var(--gold-rgb),0.35)] to-[rgba(var(--gold-rgb),0.18)] flex items-center justify-center text-2xl text-golden">
+                  <FaRegHeart className="text-3xl drop-shadow" aria-hidden />
                 </div>
                 <h4 className="font-serif text-3xl md:text-4xl text-golden foil-shimmer mb-2">
                   Andi Baso Patau
@@ -118,9 +121,9 @@ export default function WeFoundLove() {
               </div>
               
               {/* Decorative rope line */}
-              <div className="mt-6 pt-4 border-t border-dashed border-golden/30 flex items-center justify-center gap-2">
-                <span className="w-4 h-px bg-golden/40"></span>
-                <span className="w-4 h-px bg-golden/40"></span>
+              <div className="mt-6 pt-4 border-t border-dashed border-[rgba(var(--gold-rgb),0.35)] flex items-center justify-center gap-2">
+                <span className="w-4 h-px bg-[rgba(var(--gold-rgb),0.3)]"></span>
+                <span className="w-4 h-px bg-[rgba(var(--gold-rgb),0.3)]"></span>
               </div>
             </div>
           </motion.div>
@@ -133,13 +136,14 @@ export default function WeFoundLove() {
             viewport={{ once: true }}
             className="relative group"
           >
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-golden/20 via-transparent to-golden/10 p-0.5">
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[rgba(var(--gold-rgb),0.2)] via-transparent to-[rgba(var(--gold-rgb),0.12)] p-0.5">
               <div className="w-full h-full rounded-3xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm"></div>
             </div>
             
-            <div className="relative text-center p-8 border border-golden/30 rounded-3xl shadow-2xl group-hover:shadow-golden/20 transition-all duration-300">
+            <div className="relative text-center p-8 border border-[rgba(var(--gold-rgb),0.28)] rounded-3xl shadow-2xl group-hover:shadow-[0_16px_32px_rgba(var(--gold-rgb),0.18)] transition-all duration-300">
               <div className="mb-6">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-golden/30 to-golden/10 flex items-center justify-center text-2xl">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-[rgba(var(--gold-rgb),0.35)] to-[rgba(var(--gold-rgb),0.18)] flex items-center justify-center text-2xl text-golden">
+                  <FaRegHeart className="text-3xl drop-shadow" aria-hidden />
                 </div>
                 <h4 className="font-serif text-3xl md:text-4xl text-golden foil-shimmer mb-2">
                   Andi Amparita
@@ -154,9 +158,9 @@ export default function WeFoundLove() {
               </div>
               
               {/* Decorative rope line */}
-              <div className="mt-6 pt-4 border-t border-dashed border-golden/30 flex items-center justify-center gap-2">
-                <span className="w-4 h-px bg-golden/40"></span>
-                <span className="w-4 h-px bg-golden/40"></span>
+              <div className="mt-6 pt-4 border-t border-dashed border-[rgba(var(--gold-rgb),0.35)] flex items-center justify-center gap-2">
+                <span className="w-4 h-px bg-[rgba(var(--gold-rgb),0.3)]"></span>
+                <span className="w-4 h-px bg-[rgba(var(--gold-rgb),0.3)]"></span>
               </div>
             </div>
           </motion.div>

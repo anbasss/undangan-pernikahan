@@ -35,7 +35,7 @@ export default function AudioPlayer() {
         aria-pressed={on}
         onClick={() => setOn((v) => !v)}
         aria-label={on ? "Matikan Musik" : "Putar Musik"}
-        className="w-12 h-12 rounded-full bg-golden/90 backdrop-blur border-2 border-golden/50 text-white shadow-lg hover:bg-golden hover:shadow-xl transition-all duration-300 flex items-center justify-center text-lg"
+  className="w-12 h-12 rounded-full backdrop-blur border-2 border-[rgba(var(--gold-rgb),0.45)] bg-[rgba(var(--gold-rgb),0.85)] text-white shadow-lg hover:bg-[var(--gold)] hover:shadow-xl transition-all duration-300 flex items-center justify-center text-lg"
       >
         {on ? <FaPause /> : <FaPlay />}
       </button>
