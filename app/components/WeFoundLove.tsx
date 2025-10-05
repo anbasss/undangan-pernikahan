@@ -153,7 +153,7 @@ export default function WeFoundLove() {
                 </p>
               </div>
               <div className="text-ivory/80 text-sm leading-relaxed font-sans">
-                <p className="font-semibold">Bapakk Muh. Said Razak &</p>
+                <p className="font-semibold">Bapakk Muh. Said Razak, SE &</p>
                 <p className="font-semibold">Ibu Andi Panangngareng</p>
               </div>
               
