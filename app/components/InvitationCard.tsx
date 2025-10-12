@@ -29,6 +29,7 @@ export default function InvitationCard({
   const performanceMode = usePerformanceMode();
   const isLowPerformance = performanceMode === "low";
   const isBalancedPerformance = performanceMode === "balanced";
+  const shouldAnimate = !isLowPerformance;
 
   const motionInitial =
     direction === "left"
@@ -53,11 +54,12 @@ export default function InvitationCard({
 
   return (
     <motion.div
-      initial={motionInitial}
-      whileInView={{ opacity: 1, y: 0, x: 0 }}
-      transition={{ duration: motionDuration, delay, ease: [0.22, 1, 0.36, 1] }}
-      viewport={{ once: true }}
+      initial={shouldAnimate ? motionInitial : undefined}
+      whileInView={shouldAnimate ? { opacity: 1, y: 0, x: 0 } : undefined}
+      transition={shouldAnimate ? { duration: motionDuration, delay, ease: "easeOut" } : undefined}
+      viewport={shouldAnimate ? { once: true, margin: "0px 0px -12% 0px" } : undefined}
       className="relative group"
+      style={shouldAnimate ? undefined : { opacity: 1 }}
     >
       {/* Elegant Card Container */}
       <div className={containerClassName} style={{ willChange: "transform, box-shadow" }}>
@@ -100,8 +102,7 @@ export default function InvitationCard({
           {/* Dancing Script Title */}
           <div className="mb-8">
             <h3
-              className="text-3xl md:text-4xl text-golden mb-2 foil-shimmer"
-              style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 700 }}
+              className="text-3xl md:text-4xl text-golden mb-2 foil-shimmer font-script font-bold"
             >
               {title}
             </h3>
@@ -126,8 +127,7 @@ export default function InvitationCard({
               <span className="w-8 h-px bg-[rgba(var(--gold-rgb),0.35)]"></span>
             </div>
             <p
-              className="text-2xl md:text-3xl text-ivory font-bold leading-tight"
-              style={{ fontFamily: "'Playfair Display', serif" }}
+              className="text-2xl md:text-3xl text-ivory font-bold leading-tight font-display"
             >
               {date}
             </p>
@@ -169,10 +169,10 @@ export default function InvitationCard({
 
           {/* Google Maps Button - Rounded Navy Style */}
           <motion.button
-            initial={{ opacity: 0, y: 18, scale: 0.95 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: true }}
-            transition={buttonSpring}
+            initial={shouldAnimate ? { opacity: 0, y: 18, scale: 0.95 } : undefined}
+            whileInView={shouldAnimate ? { opacity: 1, y: 0, scale: 1 } : undefined}
+            viewport={shouldAnimate ? { once: true } : undefined}
+            transition={shouldAnimate ? buttonSpring : undefined}
             whileHover={{ scale: hoverScale, y: -3 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => {

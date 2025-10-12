@@ -35,6 +35,10 @@ body {
   backface-visibility: hidden;
 }
 
+.font-display { font-family: var(--font-display-serif); }
+.font-sans { font-family: var(--font-body-sans); }
+.font-script { font-family: var(--font-script); }
+
 /* Utilities */
 .bg-ocean { background-image: var(--ocean-grad); }
 .text-ivory { color: var(--ivory); }

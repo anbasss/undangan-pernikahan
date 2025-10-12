@@ -21,8 +21,14 @@ function detectInitialMode(): PerformanceMode {
   const cores = typeof navigator.hardwareConcurrency === "number" ? navigator.hardwareConcurrency : undefined;
   const memory = typeof nav.deviceMemory === "number" ? nav.deviceMemory : undefined;
   const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  const isSmallViewport = window.matchMedia?.("(max-width: 640px)").matches;
+  const isLowPixelRatio = window.devicePixelRatio && window.devicePixelRatio > 0 ? window.devicePixelRatio >= 2.5 : false;
 
   if (saveData || prefersReducedMotion) {
+    return "low";
+  }
+
+  if (isSmallViewport) {
     return "low";
   }
 
@@ -31,6 +37,10 @@ function detectInitialMode(): PerformanceMode {
   }
 
   if (memory && memory <= 4) {
+    return "low";
+  }
+
+  if (isLowPixelRatio && (cores && cores <= 6)) {
     return "low";
   }
 
@@ -54,11 +64,15 @@ export function usePerformanceMode(): PerformanceMode {
 
     const media = window.matchMedia?.("(prefers-reduced-motion: reduce)");
     media?.addEventListener?.("change", handleChange);
+    window.addEventListener("resize", handleChange);
+    window.addEventListener("orientationchange", handleChange);
 
     handleChange();
 
     return () => {
       media?.removeEventListener?.("change", handleChange);
+      window.removeEventListener("resize", handleChange);
+      window.removeEventListener("orientationchange", handleChange);
     };
   }, []);
 

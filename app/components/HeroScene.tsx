@@ -22,6 +22,9 @@ const BOAT_CLEARANCE = 0.5; // vertical distance from water crest to boat bottom
 const BOAT_HEADING = Math.PI / 1.4; // match BoatModel yaw so animation follows boat orientation
 const BOAT_APPROACH_DISTANCE = 6;
 
+const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
+const easeOutCubic = (t: number) => 1 - Math.pow(1 - clamp01(t), 3);
+
 function isPositionClose(
   a: { x: number; y: number; z: number },
   b: { x: number; y: number; z: number },
@@ -177,10 +180,11 @@ function FloatBoat({
     const clearance = BOAT_CLEARANCE;
 
     if (!reduceMotion && animatingRef.current && curveRef.current) {
-      const speed = 0.25; // normalized units per second
-      progressRef.current = Math.min(progressRef.current + delta * speed, 1);
-      const point = curveRef.current.getPointAt(progressRef.current);
-      const tangent = curveRef.current.getTangentAt(Math.max(progressRef.current - 0.001, 0));
+  const speed = 0.25; // normalized units per second
+  progressRef.current = Math.min(progressRef.current + delta * speed, 1);
+  const easedT = easeOutCubic(progressRef.current);
+  const point = curveRef.current.getPointAt(easedT);
+  const tangent = curveRef.current.getTangentAt(Math.max(easedT - 0.001, 0));
       currentPosition.current = { x: point.x, y: point.y, z: point.z };
       if (!lockHeading) {
         yawRef.current = Math.atan2(tangent.x, tangent.z);
@@ -310,6 +314,7 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
   const params = useSearchParams();
   const [mounted, setMounted] = useState(false);
   const [isIntroActive, setIsIntroActive] = useState(true);
+  const [isCompact, setIsCompact] = useState(false);
   const centerPosition = useMemo(() => ({ x: 0, y: 0, z: 0 }), []);
   const approachDirection = useMemo(() => {
     const forward = new THREE.Vector3(0, 0, -1);
@@ -339,6 +344,21 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
 
   useEffect(() => {
     setMounted(true);
+    if (typeof window !== "undefined") {
+      const updateViewport = () => setIsCompact(window.matchMedia("(max-width: 640px)").matches);
+      updateViewport();
+      window.addEventListener("resize", updateViewport);
+      window.addEventListener("orientationchange", updateViewport);
+      return () => {
+        window.removeEventListener("resize", updateViewport);
+        window.removeEventListener("orientationchange", updateViewport);
+      };
+    }
+    return () => undefined;
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
     const opened = typeof window !== 'undefined' ? sessionStorage.getItem("inv-opened") : null;
     if (opened === "1") {
       setIsIntroActive(false);
@@ -409,32 +429,37 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
     sessionStorage.setItem("inv-opened", "1");
   }
 
-  const canvasDpr: [number, number] = isLowPerformance
-    ? [0.75, 1.1]
+  const effectiveLowMotion = isLowPerformance || isCompact;
+  const canvasDpr: [number, number] = effectiveLowMotion
+    ? [0.65, 0.95]
     : isBalancedPerformance
-    ? [0.9, 1.3]
-    : [1, 1.5];
-  const gradientDuration = isLowPerformance ? 24 : isBalancedPerformance ? 28 : 30;
-  const nameTransitionDuration = isLowPerformance ? 0.8 : 1;
-  const taglineTransitionDuration = isLowPerformance ? 0.7 : 0.8;
-  const driftStrength = isLowPerformance ? 0.6 : isBalancedPerformance ? 0.85 : 1;
-  const waveDetail = isLowPerformance ? 32 : isBalancedPerformance ? 40 : 49;
-  const waveSkip = isLowPerformance ? 5 : isBalancedPerformance ? 3 : 2;
+    ? [0.85, 1.2]
+    : [1, 1.4];
+  const gradientDuration = isLowPerformance ? 24 : isBalancedPerformance ? 28 : 32;
+  const nameTransitionDuration = effectiveLowMotion ? 0.65 : isBalancedPerformance ? 0.85 : 1;
+  const taglineTransitionDuration = effectiveLowMotion ? 0.6 : isBalancedPerformance ? 0.75 : 0.85;
+  const driftStrength = isLowPerformance ? 0.55 : isBalancedPerformance ? 0.8 : 1;
+  const waveDetail = effectiveLowMotion ? 28 : isBalancedPerformance ? 40 : 49;
+  const waveSkip = effectiveLowMotion ? 6 : isBalancedPerformance ? 3 : 2;
 
   const nameContainerVariants = useMemo(() => ({
-    hidden: { opacity: 0, y: 24, letterSpacing: "0.35em" },
+    hidden: {
+      opacity: 0,
+      y: effectiveLowMotion ? 16 : 24,
+      ...(effectiveLowMotion ? {} : { letterSpacing: "0.26em" }),
+    },
     show: {
       opacity: 1,
       y: 0,
-      letterSpacing: "0.08em",
+      ...(effectiveLowMotion ? {} : { letterSpacing: "0.08em" }),
       transition: {
         duration: nameTransitionDuration,
         ease: circOut,
-        staggerChildren: 0.12,
+        staggerChildren: effectiveLowMotion ? 0.08 : 0.12,
         delayChildren: isIntroActive ? 0 : 0.05,
       },
     },
-  }), [nameTransitionDuration, isIntroActive]);
+  }), [nameTransitionDuration, isIntroActive, effectiveLowMotion]);
 
   const nameItemVariants = useMemo(
     () => ({
@@ -463,13 +488,13 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
         aria-hidden
         className="absolute inset-0 -z-20"
         initial={{ backgroundPosition: "0% 50%" }}
-        animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
-        transition={{ duration: gradientDuration, repeat: Infinity, ease: "linear" }}
+        animate={effectiveLowMotion ? undefined : { backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+        transition={effectiveLowMotion ? undefined : { duration: gradientDuration, repeat: Infinity, ease: "linear" }}
         style={{
           backgroundImage:
             "linear-gradient(135deg, rgba(5,20,42,0.95) 0%, rgba(13,54,94,0.92) 45%, rgba(32,110,173,0.85) 70%, rgba(112,177,224,0.75) 100%)",
           backgroundSize: "200% 200%",
-          willChange: "background-position",
+          willChange: effectiveLowMotion ? undefined : "background-position",
         }}
       />
 
@@ -488,23 +513,23 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
 
       <Canvas
         camera={{
-          position: [0, 1.5, 4], // Posisi kamera tetap untuk melihat kapal di tengah
-          fov: 60,
+          position: [0, isCompact ? 1.2 : 1.5, isCompact ? 4.6 : 4],
+          fov: isCompact ? 64 : 60,
         }}
-        shadows={!isLowPerformance}
+        shadows={!effectiveLowMotion}
         dpr={canvasDpr}
-        gl={{ antialias: !isLowPerformance, powerPreference: isLowPerformance ? "low-power" : "high-performance" }}
+        gl={{ antialias: !effectiveLowMotion, powerPreference: effectiveLowMotion ? "low-power" : "high-performance" }}
       >
-        <ambientLight intensity={isLowPerformance ? 0.6 : 0.8} />
+        <ambientLight intensity={effectiveLowMotion ? 0.55 : 0.8} />
         <directionalLight
           position={[2, 3, 2]}
-          intensity={isLowPerformance ? 0.9 : 1.2}
-          castShadow={!isLowPerformance}
+          intensity={effectiveLowMotion ? 0.85 : 1.2}
+          castShadow={!effectiveLowMotion}
         />
         <Suspense fallback={null}>
           <Environment preset="sunset" />
           <FloatBoat 
-            reduceMotion={reduceMotion} 
+            reduceMotion={reduceMotion || effectiveLowMotion} 
             targetPosition={boatPosition}
             initialPosition={entranceStart}
             lockHeading
@@ -522,14 +547,14 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
             </Suspense>
           </FloatBoat>
           
-          <Waves reduceMotion={reduceMotion} detail={waveDetail} skipModulo={waveSkip} />
+          <Waves reduceMotion={reduceMotion || effectiveLowMotion} detail={waveDetail} skipModulo={waveSkip} />
           <OrbitControls
             enabled={boatReady}
-            enablePan={!reduceMotion && !isLowPerformance}
-            enableZoom={!reduceMotion && !isLowPerformance}
+            enablePan={!reduceMotion && !effectiveLowMotion}
+            enableZoom={!reduceMotion && !effectiveLowMotion}
             maxPolarAngle={Math.PI / 2.2}
             target={[0, 0, 0]}
-            enableDamping={!isLowPerformance}
+            enableDamping={!effectiveLowMotion}
             dampingFactor={0.08}
           />
         </Suspense>
@@ -551,7 +576,7 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
             <motion.div
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+              transition={{ duration: effectiveLowMotion ? 0.45 : 0.6, delay: effectiveLowMotion ? 0 : 0.2 }}
               className="max-w-md space-y-6 my-auto"
             >
               {/* The Wedding Of */}
@@ -559,7 +584,7 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
                 <p className="text-golden-muted text-sm font-light tracking-[0.3em] uppercase font-sans">
                   The Wedding Of
                 </p>
-                <div className="foil-shimmer font-serif text-4xl sm:text-5xl md:text-6xl tracking-wide text-ivory drop-shadow-lg flex flex-wrap items-center justify-center gap-x-3 gap-y-1 leading-tight">
+                <div className={`foil-shimmer font-script ${isCompact ? "text-3xl" : "text-4xl"} sm:text-5xl md:text-6xl tracking-wide text-ivory drop-shadow-lg flex flex-wrap items-center justify-center gap-x-3 gap-y-1 leading-tight`}>
                   <span className="whitespace-nowrap">{coupleNames.bride}</span>
                   <span className="text-3xl sm:text-4xl">&amp;</span>
                   <span className="whitespace-nowrap">{coupleNames.groom}</span>
@@ -571,7 +596,7 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
 
               <div className="space-y-2 text-blue-100">
                 <p className="font-medium font-sans">Kepada Yth:</p>
-                <p className="text-golden text-lg font-semibold px-4 py-2 bg-white/10 rounded-lg border border-golden-soft font-sans">
+                <p className="text-golden text-base sm:text-lg font-semibold px-4 py-2 bg-white/10 rounded-lg border border-golden-soft font-sans">
                   {name || "Nama Tamu"}
                 </p>
               </div>
@@ -582,38 +607,40 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
                   You&apos;re Invited to Our Wedding Celebration
                 </p>
 
-                <AnimatePresence mode="wait" initial={false}>
-                  {boatReady ? (
-                    <motion.button
-                      key="open-invite"
-                      initial={{ opacity: 0, y: 18 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -18 }}
-                      transition={{ duration: 0.6, ease: "easeOut" }}
-                      onClick={openInvitation}
-                      className="w-full py-4 px-6 bg-gradient-to-r from-[var(--gold)] via-[var(--gold-bright)] to-[var(--gold-soft)] text-[#0b2a4a] font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 focus:ring-4 focus:ring-[rgba(203,185,138,0.45)] font-sans"
-                      aria-label={`Buka undangan pernikahan ${coupleNames.bride} dan ${coupleNames.groom}`}
-                    >
-                      Buka Undangan
-                    </motion.button>
-                  ) : (
-                    <motion.div
-                      key="loading"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 0.6, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.5, ease: "easeOut" }}
-                      className="flex items-center justify-center gap-2 text-golden-muted"
-                      role="status"
-                      aria-live="polite"
-                    >
-                      <span className="inline-flex h-2 w-2 rounded-full bg-golden animate-pulse" />
-                      <span className="inline-flex h-2 w-2 rounded-full bg-golden-soft animate-pulse" style={{ animationDelay: "120ms" }} />
-                      <span className="inline-flex h-2 w-2 rounded-full bg-golden-deep animate-pulse" style={{ animationDelay: "240ms" }} />
-                      <span className="sr-only">Kapal sedang menuju dermaga</span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <div style={{ minHeight: 56 }} className="flex items-center justify-center">
+                  <AnimatePresence mode="wait" initial={false}>
+                    {boatReady ? (
+                      <motion.button
+                        key="open-invite"
+                        initial={effectiveLowMotion ? undefined : { opacity: 0, y: 18 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={effectiveLowMotion ? { opacity: 0 } : { opacity: 0, y: -18 }}
+                        transition={{ duration: effectiveLowMotion ? 0.4 : 0.6, ease: "easeOut" }}
+                        onClick={openInvitation}
+                        className="w-full py-4 px-6 bg-gradient-to-r from-[var(--gold)] via-[var(--gold-bright)] to-[var(--gold-soft)] text-[#0b2a4a] font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 focus:ring-4 focus:ring-[rgba(203,185,138,0.45)] font-sans"
+                        aria-label={`Buka undangan pernikahan ${coupleNames.bride} dan ${coupleNames.groom}`}
+                      >
+                        Buka Undangan
+                      </motion.button>
+                    ) : (
+                      <motion.div
+                        key="loading"
+                        initial={effectiveLowMotion ? undefined : { opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 0.6, scale: 1 }}
+                        exit={effectiveLowMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95 }}
+                        transition={{ duration: effectiveLowMotion ? 0.4 : 0.5, ease: "easeOut" }}
+                        className="flex items-center justify-center gap-2 text-golden-muted"
+                        role="status"
+                        aria-live="polite"
+                      >
+                        <span className="inline-flex h-2 w-2 rounded-full bg-golden animate-pulse" />
+                        <span className="inline-flex h-2 w-2 rounded-full bg-golden-soft animate-pulse" style={{ animationDelay: "120ms" }} />
+                        <span className="inline-flex h-2 w-2 rounded-full bg-golden-deep animate-pulse" style={{ animationDelay: "240ms" }} />
+                        <span className="sr-only">Kapal sedang menuju dermaga</span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
 
               <div className="flex items-center gap-2 text-golden text-sm">
@@ -632,7 +659,7 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
           variants={nameContainerVariants}
           initial="hidden"
           animate={isIntroActive ? "hidden" : "show"}
-          className="font-serif text-4xl sm:text-5xl md:text-7xl tracking-wide text-ivory drop-shadow-lg foil-shimmer flex flex-wrap items-center justify-center gap-x-4 gap-y-2 leading-tight"
+          className={`font-script ${isCompact ? "text-3xl" : "text-4xl"} sm:text-5xl md:text-7xl tracking-wide text-ivory drop-shadow-lg foil-shimmer flex flex-wrap items-center justify-center gap-x-3 sm:gap-x-4 gap-y-2 leading-tight`}
           aria-label={`${coupleNames.bride} dan ${coupleNames.groom}`}
         >
           <motion.span variants={nameItemVariants} className="whitespace-nowrap">
@@ -649,8 +676,8 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
         <motion.p 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: isIntroActive ? 0 : 1, y: isIntroActive ? 20 : 0 }}
-          transition={{ duration: 0.8, delay: isIntroActive ? 0 : 0.9 }}
-          className="mt-1 text-blue-100/80 font-sans"
+          transition={{ duration: taglineTransitionDuration, delay: isIntroActive ? 0 : 0.9 }}
+          className={`mt-1 text-blue-100/80 font-sans ${isCompact ? "text-sm" : "text-base"}`}
         >
           {new Date(date).toLocaleDateString(undefined, { day: "2-digit", month: "long", year: "numeric" })}
         </motion.p>
@@ -658,10 +685,10 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: isIntroActive ? 0 : 1, y: isIntroActive ? 20 : 0 }}
           transition={{ duration: taglineTransitionDuration, delay: isIntroActive ? 0 : 1.1 }}
-          className="mt-6 flex items-center gap-4 text-golden-soft"
+          className={`mt-6 flex items-center ${isCompact ? "gap-3" : "gap-4"} text-golden-soft`}
         >
           <span aria-hidden className="h-px w-16 bg-[rgba(var(--gold-rgb),0.45)]" />
-          <span className="font-serif italic text-base text-[rgba(var(--gold-rgb),0.9)] drop-shadow-[0_2px_10px_rgba(0,0,0,0.45)] tracking-wide">
+          <span className={`font-serif italic ${isCompact ? "text-sm" : "text-base"} text-[rgba(var(--gold-rgb),0.9)] drop-shadow-[0_2px_10px_rgba(0,0,0,0.45)] tracking-wide`}>
             Where love sails forever
           </span>
           <span aria-hidden className="h-px w-16 bg-[rgba(var(--gold-rgb),0.45)]" />

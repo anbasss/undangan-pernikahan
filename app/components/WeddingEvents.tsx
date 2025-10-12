@@ -11,6 +11,10 @@ export default function WeddingEvents() {
   const isBalancedPerformance = performanceMode === "balanced";
   const introDuration = isLowPerformance ? 0.65 : 0.8;
   const outroDuration = isLowPerformance ? 0.65 : 0.8;
+  const shouldAnimate = !isLowPerformance;
+  const initialUp = shouldAnimate ? { opacity: 0, y: 20 } : undefined;
+  const animateUp = shouldAnimate ? { opacity: 1, y: 0 } : undefined;
+  const viewportOnce = shouldAnimate ? { once: true, margin: "0px 0px -15% 0px" } : undefined;
 
   const [akadDate, setAkadDate] = useState<string>("");
   const [resepsiDate, setResepsiDate] = useState<string>("");
@@ -37,13 +41,13 @@ export default function WeddingEvents() {
   return (
     <section className="relative py-16 px-6 md:px-12 max-w-6xl mx-auto">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: introDuration }}
-        viewport={{ once: true }}
+        initial={initialUp}
+        whileInView={animateUp}
+        transition={shouldAnimate ? { duration: introDuration, ease: "easeOut" } : undefined}
+        viewport={viewportOnce}
         className="text-center mb-16"
       >
-        <h2 className="font-serif text-4xl md:text-5xl text-golden foil-shimmer mb-4">
+        <h2 className="font-script text-4xl md:text-5xl text-golden foil-shimmer mb-4">
           Acara Pernikahan
         </h2>
         <div className="flex items-center justify-center gap-4 text-blue-100/60">
@@ -80,10 +84,10 @@ export default function WeddingEvents() {
       </div>
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: outroDuration, delay: 0.6 }}
-        viewport={{ once: true }}
+        initial={initialUp}
+        whileInView={animateUp}
+        transition={shouldAnimate ? { duration: outroDuration, delay: 0.6, ease: "easeOut" } : undefined}
+        viewport={viewportOnce}
         className="text-center mt-12 p-6 bg-gradient-to-br from-white/8 to-white/3 backdrop-blur-sm rounded-2xl border border-[rgba(var(--gold-rgb),0.25)] shadow-golden-soft"
         style={{ willChange: "transform, opacity" }}
       >

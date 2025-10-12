@@ -1,8 +1,21 @@
 "use client";
 import { motion } from "framer-motion";
 import { FaRegHeart } from "react-icons/fa";
+import { usePerformanceMode } from "../hooks/usePerformanceMode";
 
 export default function WeFoundLove() {
+  const performanceMode = usePerformanceMode();
+  const shouldAnimate = performanceMode !== "low";
+  const fadeInitial = shouldAnimate ? { opacity: 0, y: 20, x: 0 } : undefined;
+  const fadeAnimate = shouldAnimate ? { opacity: 1, y: 0, x: 0 } : undefined;
+  const fadeTransition = (delay = 0) =>
+    shouldAnimate ? { duration: 0.8, delay, ease: "easeOut" as const } : undefined;
+  const viewportOnce = shouldAnimate ? { once: true, margin: "0px 0px -12% 0px" } : undefined;
+  const slideLeftInitial = shouldAnimate ? { opacity: 0, x: -20 } : undefined;
+  const slideRightInitial = shouldAnimate ? { opacity: 0, x: 20 } : undefined;
+  const scaleInitial = shouldAnimate ? { opacity: 0, scale: 0.5, rotate: -180 } : undefined;
+  const scaleAnimate = shouldAnimate ? { opacity: 1, scale: 1, rotate: 0 } : undefined;
+
   return (
     <section className="relative py-16 px-6 md:px-12 max-w-6xl mx-auto">
       {/* Background texture */}
@@ -19,13 +32,13 @@ export default function WeFoundLove() {
       <div className="relative z-10 text-center">
         {/* Title */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
+          initial={fadeInitial}
+          whileInView={fadeAnimate}
+          transition={fadeTransition()}
+          viewport={viewportOnce}
           className="mb-12"
         >
-          <h2 className="font-serif text-4xl md:text-5xl text-golden foil-shimmer mb-4">
+          <h2 className="font-script text-4xl md:text-5xl text-golden foil-shimmer mb-4">
             We Found Love
           </h2>
           <div className="flex items-center justify-center gap-4 text-blue-100/60">
@@ -36,10 +49,10 @@ export default function WeFoundLove() {
 
         {/* Ayat Al-Quran */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          viewport={{ once: true }}
+          initial={fadeInitial}
+          whileInView={fadeAnimate}
+          transition={fadeTransition(0.2)}
+          viewport={viewportOnce}
           className="mb-12 relative"
         >
           {/* Nautical border decoration */}
@@ -50,9 +63,9 @@ export default function WeFoundLove() {
           <div className="absolute -bottom-2 -right-3 w-6 h-6 bg-[var(--gold)] rounded-full opacity-50"></div>
 
           <div className="relative ornate-panel px-7 py-6 md:px-9 md:py-7 bg-gradient-to-br from-white/12 to-white/5 backdrop-blur-sm rounded-3xl border border-[rgba(var(--gold-rgb),0.28)] shadow-golden-soft">
-            <div className="text-right mb-6 font-arabic text-xl md:text-2xl leading-relaxed text-golden">
+            {/* <div className="text-right mb-6 font-arabic text-xl md:text-2xl leading-relaxed text-golden">
               وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً ۚ إِنَّ فِي ذَٰلِكَ لَآيَاتٍ لِّقَوْمٍ يَتَفَكَّرُونَ
-            </div>
+            </div> */}
             <div className="text-ivory/90 text-sm md:text-base leading-relaxed mb-4 font-sans">
               &ldquo;Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih dan sayang. Sungguh, pada yang demikian itu benar-benar terdapat tanda-tanda (kebesaran Allah) bagi kaum yang berpikir.&rdquo;
             </div>
@@ -62,13 +75,13 @@ export default function WeFoundLove() {
 
         {/* Bride & Groom */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          viewport={{ once: true }}
+          initial={fadeInitial}
+          whileInView={fadeAnimate}
+          transition={fadeTransition(0.4)}
+          viewport={viewportOnce}
           className="mb-12"
         >
-          <h3 className="font-serif text-2xl md:text-3xl text-golden mb-6">
+          <h3 className="font-script text-2xl md:text-3xl text-golden mb-6">
             Bride & Groom
           </h3>
           <p className="text-ivory/80 text-sm md:text-base leading-relaxed max-w-3xl mx-auto mb-8 font-sans">
@@ -81,10 +94,10 @@ export default function WeFoundLove() {
           {/* Center & Symbol - Only visible on desktop */}
           <div className=" absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
             <motion.div
-              initial={{ opacity: 0, scale: 0.5, rotate: -180 }}
-              whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
-              transition={{ duration: 1, delay: 1, type: "spring", bounce: 0.4 }}
-              viewport={{ once: true }}
+              initial={scaleInitial}
+              whileInView={scaleAnimate}
+              transition={shouldAnimate ? { duration: 1, delay: 1, type: "spring", bounce: 0.4 } : undefined}
+              viewport={viewportOnce}
               className="w-16 h-16 bg-gradient-to-br from-[var(--gold)] via-[rgba(var(--gold-rgb),0.7)] to-[rgba(var(--gold-rgb),0.45)] rounded-full flex items-center justify-center glow-golden border-4 border-white/20 backdrop-blur-sm"
             >
               <span className="text-white font-serif text-2xl font-bold">&</span>
@@ -93,10 +106,10 @@ export default function WeFoundLove() {
           
           {/* Bride */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            viewport={{ once: true }}
+            initial={slideLeftInitial}
+            whileInView={fadeAnimate}
+            transition={fadeTransition(0.6)}
+            viewport={viewportOnce}
             className="relative group"
           >
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[rgba(var(--gold-rgb),0.2)] via-transparent to-[rgba(var(--gold-rgb),0.12)] p-0.5">
@@ -108,7 +121,7 @@ export default function WeFoundLove() {
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-[rgba(var(--gold-rgb),0.35)] to-[rgba(var(--gold-rgb),0.18)] flex items-center justify-center text-2xl text-golden">
                   <FaRegHeart className="text-3xl drop-shadow" aria-hidden />
                 </div>
-                <h4 className="font-serif text-3xl md:text-4xl text-golden foil-shimmer mb-2">
+                <h4 className="font-script text-3xl md:text-4xl text-golden foil-shimmer mb-2">
                   Andi Baso Patau
                 </h4>
                 <p className="text-ivory font-medium text-lg font-sans">
@@ -130,10 +143,10 @@ export default function WeFoundLove() {
 
           {/* Groom */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            viewport={{ once: true }}
+            initial={slideRightInitial}
+            whileInView={fadeAnimate}
+            transition={fadeTransition(0.8)}
+            viewport={viewportOnce}
             className="relative group"
           >
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[rgba(var(--gold-rgb),0.2)] via-transparent to-[rgba(var(--gold-rgb),0.12)] p-0.5">
@@ -145,7 +158,7 @@ export default function WeFoundLove() {
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-[rgba(var(--gold-rgb),0.35)] to-[rgba(var(--gold-rgb),0.18)] flex items-center justify-center text-2xl text-golden">
                   <FaRegHeart className="text-3xl drop-shadow" aria-hidden />
                 </div>
-                <h4 className="font-serif text-3xl md:text-4xl text-golden foil-shimmer mb-2">
+                <h4 className="font-script text-3xl md:text-4xl text-golden foil-shimmer mb-2">
                   Andi Amparita
                 </h4>
                 <p className="text-ivory font-medium text-lg font-sans">

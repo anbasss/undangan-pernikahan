@@ -1,7 +1,16 @@
 "use client";
 import { motion } from "framer-motion";
+import { usePerformanceMode } from "../hooks/usePerformanceMode";
 
 export default function ThankYouSection() {
+  const performanceMode = usePerformanceMode();
+  const shouldAnimate = performanceMode !== "low";
+  const fadeInitial = shouldAnimate ? { opacity: 0, y: 20 } : undefined;
+  const fadeAnimate = shouldAnimate ? { opacity: 1, y: 0 } : undefined;
+  const fadeTransition = (delay = 0) =>
+    shouldAnimate ? { duration: 0.6, delay, ease: "easeOut" as const } : undefined;
+  const viewportOnce = shouldAnimate ? { once: true, margin: "0px 0px -12% 0px" } : undefined;
+
   return (
     <section className="relative py-16 px-6 md:px-12 max-w-4xl mx-auto">
       {/* Background texture */}
@@ -16,10 +25,10 @@ export default function ThankYouSection() {
       {/* Main Content */}
       <div className="relative z-10 text-center">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
+          initial={fadeInitial}
+          whileInView={fadeAnimate}
+          transition={fadeTransition()}
+          viewport={viewportOnce}
           className="relative"
         >
           {/* Elegant border decoration */}
@@ -36,30 +45,30 @@ export default function ThankYouSection() {
             {/* Thank you message */}
             <div className="space-y-6 text-ivory">
               <motion.p
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                viewport={{ once: true }}
+                initial={fadeInitial}
+                whileInView={fadeAnimate}
+                transition={fadeTransition(0.2)}
+                viewport={viewportOnce}
                 className="text-lg md:text-xl font-sans leading-relaxed"
               >
                 Kami Yang Berbahagia
               </motion.p>
               
               <motion.h3
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                viewport={{ once: true }}
-                className="font-serif text-3xl md:text-4xl text-golden foil-shimmer"
+                initial={fadeInitial}
+                whileInView={fadeAnimate}
+                transition={fadeTransition(0.4)}
+                viewport={viewportOnce}
+                className="font-script text-3xl md:text-4xl text-golden foil-shimmer"
               >
                 Andi Baso Patau & Andi Amparita
               </motion.h3>
               
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-                viewport={{ once: true }}
+                initial={fadeInitial}
+                whileInView={fadeAnimate}
+                transition={fadeTransition(0.6)}
+                viewport={viewportOnce}
                 className="text-lg md:text-xl font-sans leading-relaxed space-y-2"
               >
                 <p>Atas kehadiran dan doa restunya</p>
