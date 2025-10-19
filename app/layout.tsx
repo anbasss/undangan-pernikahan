@@ -23,7 +23,7 @@ const scriptFont = Dancing_Script({
 
 const siteOrigin = "https://pernikahanandibasodanandiamprita.vercel.app";
 const defaultShareUrl = `${siteOrigin}/`;
-const shareImageUrl = `${siteOrigin}/gambar2.jpg`;
+const shareImageUrl = `${siteOrigin}/api/og`;
 export const metadata: Metadata = {
   metadataBase: new URL(siteOrigin),
   title: "Nautical Wedding Invitation",
@@ -38,12 +38,12 @@ export const metadata: Metadata = {
     siteName: "Nautical Wedding Invitation",
     images: [
       {
-        url: shareImageUrl,
-        secureUrl: shareImageUrl,
-        width: 1200,
-        height: 630,
-        alt: "Foto mempelai Andi Baso Patau dan Andi Amparita",
-        type: "image/jpeg",
+  url: shareImageUrl,
+  secureUrl: shareImageUrl,
+  width: 1200,
+  height: 630,
+  alt: "Foto mempelai Andi Baso Patau dan Andi Amparita",
+  type: "image/png",
       },
     ],
   },
