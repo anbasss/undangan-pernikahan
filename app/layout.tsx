@@ -21,10 +21,11 @@ const scriptFont = Dancing_Script({
   weight: ["400", "500", "600", "700"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com";
-
+const siteOrigin = "https://pernikahanandibasodanandiamprita.vercel.app";
+const defaultShareUrl = `${siteOrigin}/`;
+const shareImageUrl = `${siteOrigin}/gambar2.jpg`;
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(siteOrigin),
   title: "Nautical Wedding Invitation",
   description:
     "Undangan pernikahan Andi Baso & Andi Amparita",
@@ -33,14 +34,16 @@ export const metadata: Metadata = {
     title: "Nautical Wedding Invitation",
     description:
     "Undangan pernikahan Andi Baso & Andi Amparita",
-    url: siteUrl,
+    url: defaultShareUrl,
     siteName: "Nautical Wedding Invitation",
     images: [
       {
-        url: "/gambar2.jpg",
+        url: shareImageUrl,
+        secureUrl: shareImageUrl,
         width: 1200,
         height: 630,
         alt: "Foto mempelai Andi Baso Patau dan Andi Amparita",
+        type: "image/jpeg",
       },
     ],
   },
@@ -49,7 +52,7 @@ export const metadata: Metadata = {
     title: "Nautical Wedding Invitation",
     description:
     "Undangan pernikahan Andi Baso & Andi Amparita",
-    images: ["/gambar2.jpg"],
+    images: [shareImageUrl],
   },
 };
 
