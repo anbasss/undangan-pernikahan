@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { OrbitControls, Environment, Html, useGLTF, Center } from "@react-three/drei";
@@ -92,22 +92,26 @@ function BoatModel({ scale = 0.02, onLoaded }: { scale?: number; onLoaded?: () =
   );
 }
 
-function FloatBoat({ 
-  children, 
-  reduceMotion, 
+function FloatBoat({
+  children,
+  reduceMotion,
   targetPosition = { x: 0, y: 0, z: 0 },
   initialPosition = targetPosition,
   onArrived,
   lockHeading = false,
   driftStrength = 1,
-}: { 
-  children: React.ReactNode; 
+  motionIntensity = 1,
+  approachSpeed = 0.25,
+}: {
+  children: React.ReactNode;
   reduceMotion?: boolean;
   targetPosition?: { x: number; y: number; z: number };
   initialPosition?: { x: number; y: number; z: number };
   onArrived?: () => void;
   lockHeading?: boolean;
   driftStrength?: number;
+  motionIntensity?: number;
+  approachSpeed?: number;
 }) {
   const ref = useRef<Group>(null!);
   const currentPosition = useRef({ ...initialPosition });
@@ -117,6 +121,8 @@ function FloatBoat({
   const animatingRef = useRef(false);
   const yawRef = useRef(0);
   const driftPhase = useRef(Math.random() * Math.PI * 2);
+
+  const clampedIntensity = Math.max(0, motionIntensity);
 
   useEffect(() => {
     if (lockHeading && ref.current) {
@@ -173,14 +179,14 @@ function FloatBoat({
     if (!ref.current) return;
     const t = state.clock.getElapsedTime();
     const base = WATER_Y;
-    const amp = reduceMotion ? 0 : WAVE_AMP;
+    const amp = reduceMotion ? 0 : WAVE_AMP * clampedIntensity;
     const freq = 0.8;
     const x = 0, z = 0;
     const h = base + amp * Math.sin(freq * x + t) * Math.cos(freq * z + t);
     const clearance = BOAT_CLEARANCE;
 
     if (!reduceMotion && animatingRef.current && curveRef.current) {
-  const speed = 0.25; // normalized units per second
+  const speed = reduceMotion ? 0 : approachSpeed;
   progressRef.current = Math.min(progressRef.current + delta * speed, 1);
   const easedT = easeOutCubic(progressRef.current);
   const point = curveRef.current.getPointAt(easedT);
@@ -226,7 +232,7 @@ function FloatBoat({
     }
 
   const driftEnabled = !reduceMotion && !animatingRef.current;
-  const driftScale = driftStrength;
+  const driftScale = driftStrength * clampedIntensity;
   const driftX = driftEnabled ? 0.08 * driftScale * Math.sin(t * 0.25 + driftPhase.current) : 0;
   const driftZ = driftEnabled ? 0.05 * driftScale * Math.cos(t * 0.22 + driftPhase.current) : 0;
 
@@ -236,8 +242,8 @@ function FloatBoat({
     ref.current.rotation.y = yawRef.current;
 
     if (!reduceMotion) {
-      ref.current.rotation.z = 0.03 * Math.sin(freq * x + t + Math.PI / 2);
-      ref.current.rotation.x = 0.02 * Math.cos(freq * z + t + Math.PI / 2);
+      ref.current.rotation.z = 0.03 * clampedIntensity * Math.sin(freq * x + t + Math.PI / 2);
+      ref.current.rotation.x = 0.02 * clampedIntensity * Math.cos(freq * z + t + Math.PI / 2);
     } else {
       ref.current.rotation.x = 0;
       ref.current.rotation.z = 0;
@@ -260,10 +266,12 @@ function Waves({
   reduceMotion,
   detail = 49,
   skipModulo = 2,
+  intensity = 1,
 }: {
   reduceMotion?: boolean;
   detail?: number;
   skipModulo?: number;
+  intensity?: number;
 }) {
   const ref = useRef<THREE.Mesh>(null);
 const basePositions = useRef<Float32Array>(new Float32Array());
@@ -287,7 +295,7 @@ const basePositions = useRef<Float32Array>(new Float32Array());
     if (frameSkip.current !== 0) return;
 
     const t = state.clock.getElapsedTime();
-    const amp = reduceMotion ? 0 : WAVE_AMP;
+  const amp = reduceMotion ? 0 : WAVE_AMP * Math.max(0, intensity);
     const freq = 0.6;
 
     for (let i = 0; i < positions.length; i += 3) {
@@ -429,18 +437,37 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
     sessionStorage.setItem("inv-opened", "1");
   }
 
-  const effectiveLowMotion = isLowPerformance || isCompact;
-  const canvasDpr: [number, number] = effectiveLowMotion
-    ? [0.65, 0.95]
+  const reduceMotionActive = reduceMotion ?? false;
+  const effectiveLowMotion = reduceMotionActive || isLowPerformance;
+  const baseCanvasDpr: [number, number] = reduceMotionActive
+    ? [0.55, 0.85]
+    : isLowPerformance
+    ? [0.65, 1.0]
     : isBalancedPerformance
-    ? [0.85, 1.2]
+    ? [0.85, 1.25]
     : [1, 1.4];
+  const canvasDpr: [number, number] = isCompact
+    ? [Math.max(0.6, baseCanvasDpr[0] * 0.9), Math.min(baseCanvasDpr[1], 1.1)]
+    : baseCanvasDpr;
   const gradientDuration = isLowPerformance ? 24 : isBalancedPerformance ? 28 : 32;
   const nameTransitionDuration = effectiveLowMotion ? 0.65 : isBalancedPerformance ? 0.85 : 1;
   const taglineTransitionDuration = effectiveLowMotion ? 0.6 : isBalancedPerformance ? 0.75 : 0.85;
-  const driftStrength = isLowPerformance ? 0.55 : isBalancedPerformance ? 0.8 : 1;
-  const waveDetail = effectiveLowMotion ? 28 : isBalancedPerformance ? 40 : 49;
-  const waveSkip = effectiveLowMotion ? 6 : isBalancedPerformance ? 3 : 2;
+  const baseMotionIntensity = reduceMotionActive
+    ? 0
+    : isLowPerformance
+    ? 0.65
+    : isBalancedPerformance
+    ? 0.85
+    : 1;
+  const motionIntensity = isCompact ? baseMotionIntensity * 0.9 : baseMotionIntensity;
+  const boatApproachSpeed = reduceMotionActive ? 0 : isLowPerformance ? 0.18 : isBalancedPerformance ? 0.22 : 0.25;
+  const baseDriftStrength = reduceMotionActive ? 0.35 : isLowPerformance ? 0.55 : isBalancedPerformance ? 0.8 : 1;
+  const driftStrength = isCompact ? baseDriftStrength * 0.85 : baseDriftStrength;
+  const waveDetail = reduceMotionActive ? 24 : isLowPerformance ? 32 : isBalancedPerformance ? 40 : isCompact ? 45 : 49;
+  const waveSkip = reduceMotionActive ? 6 : isLowPerformance ? 4 : isBalancedPerformance ? 3 : isCompact ? 3 : 2;
+  const waveIntensity = reduceMotionActive ? 0 : isCompact ? motionIntensity * 0.9 : motionIntensity;
+  const enableShadows = !(effectiveLowMotion && isCompact);
+  const enableAntialias = !(effectiveLowMotion && isCompact);
 
   const nameContainerVariants = useMemo(() => ({
     hidden: {
@@ -516,9 +543,10 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
           position: [0, isCompact ? 1.2 : 1.5, isCompact ? 4.6 : 4],
           fov: isCompact ? 64 : 60,
         }}
-        shadows={!effectiveLowMotion}
+        shadows={enableShadows}
         dpr={canvasDpr}
-        gl={{ antialias: !effectiveLowMotion, powerPreference: effectiveLowMotion ? "low-power" : "high-performance" }}
+        frameloop={reduceMotionActive ? "demand" : "always"}
+        gl={{ antialias: enableAntialias, powerPreference: effectiveLowMotion ? "low-power" : "high-performance" }}
       >
         <ambientLight intensity={effectiveLowMotion ? 0.55 : 0.8} />
         <directionalLight
@@ -527,13 +555,15 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
           castShadow={!effectiveLowMotion}
         />
         <Suspense fallback={null}>
-          <Environment preset="sunset" />
-          <FloatBoat 
-            reduceMotion={reduceMotion || effectiveLowMotion} 
+          {!effectiveLowMotion && <Environment preset="sunset" />}
+          <FloatBoat
+            reduceMotion={reduceMotionActive}
             targetPosition={boatPosition}
             initialPosition={entranceStart}
             lockHeading
             driftStrength={driftStrength}
+            motionIntensity={motionIntensity}
+            approachSpeed={boatApproachSpeed}
             onArrived={() => {
               if (boatLoaded && !boatReadyNotified.current) {
                 boatReadyNotified.current = true;
@@ -547,11 +577,16 @@ export default function HeroScene({ reduceMotion, coupleNames, date, onBoatReady
             </Suspense>
           </FloatBoat>
           
-          <Waves reduceMotion={reduceMotion || effectiveLowMotion} detail={waveDetail} skipModulo={waveSkip} />
+          <Waves
+            reduceMotion={reduceMotionActive}
+            detail={waveDetail}
+            skipModulo={waveSkip}
+            intensity={waveIntensity}
+          />
           <OrbitControls
-            enabled={boatReady}
-            enablePan={!reduceMotion && !effectiveLowMotion}
-            enableZoom={!reduceMotion && !effectiveLowMotion}
+            enabled={boatReady && !effectiveLowMotion}
+            enablePan={!reduceMotionActive && !effectiveLowMotion}
+            enableZoom={!reduceMotionActive && !effectiveLowMotion}
             maxPolarAngle={Math.PI / 2.2}
             target={[0, 0, 0]}
             enableDamping={!effectiveLowMotion}

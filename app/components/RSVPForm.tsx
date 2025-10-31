@@ -64,20 +64,20 @@ export default function RSVPForm() {
               <div className="space-y-4 text-left">
                 <div className="bg-white/10 rounded-lg p-4 border border-[rgba(var(--gold-rgb),0.25)]">
                   <p className="text-blue-100 text-sm font-semibold mb-1">Nama Penerima:</p>
-                  <p className="text-golden font-medium">Ananda & Pasangan</p>
+                  <p className="text-golden font-medium">Andi B. Patau</p>
                 </div>
                 
                 <div className="bg-white/10 rounded-lg p-4 border border-[rgba(var(--gold-rgb),0.25)]">
                   <p className="text-blue-100 text-sm font-semibold mb-1">Nomor Rekening:</p>
-                  <p className="text-golden font-mono font-medium">1234567890</p>
-                  <p className="text-blue-200/80 text-xs mt-1">Bank BCA</p>
+                  <p className="text-golden font-mono font-medium">715050405</p>
+                  <p className="text-blue-200/80 text-xs mt-1">Bank BNI</p>
                 </div>
               </div>
               
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => {
-                    navigator.clipboard.writeText('1234567890');
+                    navigator.clipboard.writeText('715050405');
                     alert('Nomor rekening berhasil disalin!');
                   }}
                   className="flex-1 bg-golden text-blue-950 font-semibold py-2 px-4 rounded-lg transition-colors hover:bg-[rgba(var(--gold-rgb),0.85)]"
