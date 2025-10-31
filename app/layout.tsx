@@ -24,6 +24,7 @@ const scriptFont = Dancing_Script({
 const siteOrigin = "https://pernikahanandibasodanandiamprita.vercel.app";
 const defaultShareUrl = `${siteOrigin}/`;
 const shareImageUrl = `${siteOrigin}/gambar1.jpg`;
+const shareImageSquareUrl = `${siteOrigin}/gambar1-square.jpg`;
 export const metadata: Metadata = {
   metadataBase: new URL(siteOrigin),
   title: "A.Baso & A.Ampa — Undangan Pernikahan",
@@ -38,12 +39,21 @@ export const metadata: Metadata = {
     siteName: "A.Baso & A.Ampa — Undangan Pernikahan",
     images: [
       {
-  url: shareImageUrl,
-  secureUrl: shareImageUrl,
-  width: 1200,
-  height: 630,
-  alt: "Foto mempelai Andi Baso Patau dan Andi Amparita",
-  type: "image/jpeg",
+        url: shareImageUrl,
+        secureUrl: shareImageUrl,
+        width: 1200,
+        height: 630,
+        alt: "Foto mempelai Andi Baso Patau dan Andi Amparita",
+        type: "image/jpeg",
+      },
+      {
+        // Smaller fallback to satisfy WhatsApp's stricter limits.
+        url: shareImageSquareUrl,
+        secureUrl: shareImageSquareUrl,
+        width: 400,
+        height: 400,
+        alt: "Foto mempelai Andi Baso Patau dan Andi Amparita",
+        type: "image/jpeg",
       },
     ],
   },
@@ -52,7 +62,7 @@ export const metadata: Metadata = {
     title: "A.Baso & A.Ampa — Undangan Pernikahan",
     description:
     "Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud berbagi kabar bahagia dalam hidup kami.",
-    images: [shareImageUrl],
+    images: [shareImageUrl, shareImageSquareUrl],
   },
 };
 
