@@ -1,7 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
-import { MotionConfig } from "framer-motion";
-import { Suspense, useEffect, useState } from "react";
+import { MotionConfig, motion, useInView } from "framer-motion";
+import { type ReactNode, Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 const HeroScene = dynamic(() => import("./components/HeroScene"), { ssr: false });
@@ -13,6 +13,51 @@ const ThankYouSection = dynamic(() => import("./components/ThankYouSection"));
 const Countdown = dynamic(() => import("./components/Countdown"), { ssr: false });
 const AudioPlayer = dynamic(() => import("./components/AudioPlayer"));
 const ShareBar = dynamic(() => import("./components/ShareBar"), { ssr: false });
+
+type RevealSectionProps = {
+  id?: string;
+  ariaLabelledBy: string;
+  className?: string;
+  reduceMotion: boolean;
+  delay?: number;
+  children: ReactNode;
+};
+
+const revealVariants = {
+  hidden: { opacity: 0, y: 48, filter: "blur(12px)" },
+  visible: { opacity: 1, y: 0, filter: "blur(0px)" },
+};
+
+function RevealSection({
+  id,
+  ariaLabelledBy,
+  className,
+  reduceMotion,
+  delay = 0,
+  children,
+}: RevealSectionProps) {
+  const ref = useRef<HTMLElement | null>(null);
+  const inView = useInView(ref, {
+    once: true,
+    margin: "0px 0px -15% 0px",
+  });
+  const shouldAnimate = !reduceMotion;
+
+  return (
+    <motion.section
+      ref={ref}
+      id={id}
+      aria-labelledby={ariaLabelledBy}
+      className={className}
+      initial={shouldAnimate ? "hidden" : "visible"}
+      animate={shouldAnimate ? (inView ? "visible" : "hidden") : "visible"}
+      variants={shouldAnimate ? revealVariants : { visible: { opacity: 1, y: 0, filter: "blur(0px)" } }}
+      transition={shouldAnimate ? { duration: 0.85, ease: [0.22, 1, 0.36, 1], delay } : undefined}
+    >
+      {children}
+    </motion.section>
+  );
+}
 
 // Component that uses useSearchParams wrapped in Suspense
 function HomeContent() {
@@ -83,30 +128,30 @@ function HomeContent() {
         <ShareBar />
       </header>
       <div id="content" className="relative z-10 space-y-24 md:space-y-32">
-        <section aria-labelledby="love" className="px-4 md:px-8">
+        <RevealSection ariaLabelledBy="love" className="px-4 md:px-8" reduceMotion={reduceMotion}>
           <h2 id="love" className="sr-only">We Found Love</h2>
           <WeFoundLove />
-        </section>
-        <section aria-labelledby="events" className="px-4 md:px-8">
+        </RevealSection>
+        <RevealSection ariaLabelledBy="events" className="px-4 md:px-8" reduceMotion={reduceMotion} delay={0.05}>
           <h2 id="events" className="sr-only">Acara Pernikahan</h2>
           <WeddingEvents />
-        </section>
-        <section aria-labelledby="countdown" className="px-4 md:px-8">
+        </RevealSection>
+        <RevealSection ariaLabelledBy="countdown" className="px-4 md:px-8" reduceMotion={reduceMotion} delay={0.1}>
           <h2 id="countdown" className="sr-only">Hitung Mundur</h2>
           <Countdown targetDate={new Date("2025-11-09T09:00:00")} />
-        </section>
-        <section aria-labelledby="map" className="px-4 md:px-8">
+        </RevealSection>
+        <RevealSection ariaLabelledBy="map" className="px-4 md:px-8" reduceMotion={reduceMotion} delay={0.15}>
           <h2 id="map" className="sr-only">Peta Lokasi</h2>
           <MapSection />
-        </section>
-        <section aria-labelledby="rsvp" className="px-4 md:px-8">
+        </RevealSection>
+        <RevealSection ariaLabelledBy="rsvp" className="px-4 md:px-8" reduceMotion={reduceMotion} delay={0.2}>
           <h2 id="rsvp" className="sr-only">RSVP</h2>
           <RSVPForm />
-        </section>
-        <section aria-labelledby="thankyou" className="px-4 md:px-8 pb-20">
+        </RevealSection>
+        <RevealSection ariaLabelledBy="thankyou" className="px-4 md:px-8 pb-20" reduceMotion={reduceMotion} delay={0.25}>
           <h2 id="thankyou" className="sr-only">Ucapan Terima Kasih</h2>
           <ThankYouSection />
-        </section>
+        </RevealSection>
       </div>
       <footer className="relative z-10 text-center py-8 text-sm text-blue-100/80">
         © 2025 Andi Baso Patau & Andi Amparita — Berlayar bersama selamanya
