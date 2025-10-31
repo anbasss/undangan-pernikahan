@@ -64,7 +64,7 @@ export default function RSVPForm() {
               <div className="space-y-4 text-left">
                 <div className="bg-white/10 rounded-lg p-4 border border-[rgba(var(--gold-rgb),0.25)]">
                   <p className="text-blue-100 text-sm font-semibold mb-1">Nama Penerima:</p>
-                  <p className="text-golden font-medium">Andi B. Patau</p>
+                  <p className="text-golden font-medium">Andi B. Patau Naga Uleng</p>
                 </div>
                 
                 <div className="bg-white/10 rounded-lg p-4 border border-[rgba(var(--gold-rgb),0.25)]">

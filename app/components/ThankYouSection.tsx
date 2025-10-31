@@ -61,7 +61,7 @@ export default function ThankYouSection() {
                 viewport={viewportOnce}
                 className="font-script text-3xl md:text-4xl text-golden foil-shimmer"
               >
-                Andi Baso Patau & Andi Amparita
+                Andi B. Patau Naga Uleng & Andi Amparita Said, S.Pd, Gr
               </motion.h3>
               
               <motion.div

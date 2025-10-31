@@ -61,7 +61,7 @@ export default function WeddingEvents() {
         <InvitationCard
           title="Akad Nikah"
           date={akadDate}
-          time="09:00 WITA - Selesai"
+          time="10:00 WITA - Selesai"
           location="Mesjid Salokaraja"
           address="Salokaraja, Sulawesi Selatan"
           mapsUrl="https://maps.google.com/?q=Mesjid+Salokaraja"
@@ -73,7 +73,7 @@ export default function WeddingEvents() {
         <InvitationCard
           title="Resepsi Pernikahan"
           date={resepsiDate}
-          time="09:00 WITA - 17:00 WITA"
+          time={"09:00 WITA - 17.00 WITA\n19:00 WITA - SELESAI"}
           location="CABBUE/ABEKKAE"
           address="Sebelah Utara Permandian Alam Ompo , Soppeng, Sulawesi Selatan"
           mapsUrl="https://maps.app.goo.gl/9u4NRZ6TtZ7HjMB47"

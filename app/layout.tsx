@@ -43,7 +43,7 @@ export const metadata: Metadata = {
         secureUrl: shareImageUrl,
         width: 1200,
         height: 630,
-        alt: "Foto mempelai Andi Baso Patau dan Andi Amparita",
+        alt: "Foto mempelai Andi B. Patau Naga Uleng dan Andi Amparita Said, S.Pd, Gr",
         type: "image/jpeg",
       },
       {
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
         secureUrl: shareImageSquareUrl,
         width: 400,
         height: 400,
-        alt: "Foto mempelai Andi Baso Patau dan Andi Amparita",
+        alt: "Foto mempelai Andi B. Patau Naga Uleng dan Andi Amparita Said, S.Pd, Gr",
         type: "image/jpeg",
       },
     ],

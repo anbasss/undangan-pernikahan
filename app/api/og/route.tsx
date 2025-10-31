@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Undangan Pernikahan Andi Baso & Andi Amparita";
+export const alt = "Undangan Pernikahan Andi B. Patau Naga Uleng & Andi Amparita Said, S.Pd, Gr";
 export const size = {
   width: 1200,
   height: 630,
@@ -55,7 +55,7 @@ export async function GET(request: Request) {
           >
             The Wedding Of
           </span>
-          <span
+            <span
             style={{
               fontSize: "68px",
               fontWeight: 700,
@@ -63,7 +63,7 @@ export async function GET(request: Request) {
               lineHeight: 1.1,
             }}
           >
-            Andi Baso & Andi Amparita
+            Andi B. Patau Naga Uleng & Andi Amparita Said, S.Pd, Gr
           </span>
           {invitee ? (
             <span

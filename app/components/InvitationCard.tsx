@@ -141,7 +141,7 @@ export default function InvitationCard({
                 <p className="text-golden font-semibold font-sans text-sm uppercase tracking-wide">
                   Waktu
                 </p>
-                <p className="text-ivory text-lg font-medium font-sans">{time}</p>
+                <p className="text-ivory text-lg font-medium font-sans" style={{ whiteSpace: "pre-line" }}>{time}</p>
               </div>
             </div>
 

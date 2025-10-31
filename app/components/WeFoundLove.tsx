@@ -122,7 +122,7 @@ export default function WeFoundLove() {
                   <FaRegHeart className="text-3xl drop-shadow" aria-hidden />
                 </div>
                 <h4 className="font-script text-3xl md:text-4xl text-golden foil-shimmer mb-2">
-                  Andi Baso Patau
+                  Andi B. Patau Naga Uleng
                 </h4>
                 <p className="text-ivory font-medium text-lg font-sans">
                   Putra dari
@@ -159,7 +159,7 @@ export default function WeFoundLove() {
                   <FaRegHeart className="text-3xl drop-shadow" aria-hidden />
                 </div>
                 <h4 className="font-script text-3xl md:text-4xl text-golden foil-shimmer mb-2">
-                  Andi Amparita
+                  Andi Amparita Said, S.Pd, Gr
                 </h4>
                 <p className="text-ivory font-medium text-lg font-sans">
                   Putri dari

@@ -123,7 +123,7 @@ function HomeContent() {
         Skip to content
       </a>
       <header aria-label="Undangan Pernikahan" className="relative">
-        <HeroScene reduceMotion={reduceMotion} coupleNames={{ bride: "Andi Baso Patau", groom: "Andi Amparita" }} date="2025-11-09T10:00:00" />
+  <HeroScene reduceMotion={reduceMotion} coupleNames={{ bride: "Andi B. Patau Naga Uleng", groom: "Andi Amparita Said, S.Pd, Gr" }} date="2025-11-09T10:00:00" />
         <AudioPlayer />
         <ShareBar />
       </header>
@@ -154,7 +154,7 @@ function HomeContent() {
         </RevealSection>
       </div>
       <footer className="relative z-10 text-center py-8 text-sm text-blue-100/80">
-        © 2025 Andi Baso Patau & Andi Amparita — Berlayar bersama selamanya
+  © 2025 Andi B. Patau Naga Uleng & Andi Amparita Said, S.Pd, Gr — Berlayar bersama selamanya
       </footer>
       </main>
     </MotionConfig>
