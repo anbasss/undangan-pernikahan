@@ -23,19 +23,19 @@ const scriptFont = Dancing_Script({
 
 const siteOrigin = "https://pernikahanandibasodanandiamprita.vercel.app";
 const defaultShareUrl = `${siteOrigin}/`;
-const shareImageUrl = `${siteOrigin}/gambar2.jpg`;
+const shareImageUrl = `${siteOrigin}/gambar1.jpg`;
 export const metadata: Metadata = {
   metadataBase: new URL(siteOrigin),
-  title: "Nautical Wedding Invitation",
+  title: "A.Baso & A.Ampa — Undangan Pernikahan",
   description:
-    "Undangan pernikahan Andi Baso & Andi Amparita",
+    "Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud berbagi kabar bahagia dalam hidup kami.",
   openGraph: {
     type: "website",
-    title: "Nautical Wedding Invitation",
+    title: "A.Baso & A.Ampa — Undangan Pernikahan",
     description:
-    "Undangan pernikahan Andi Baso & Andi Amparita",
+    "Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud berbagi kabar bahagia dalam hidup kami.",
     url: defaultShareUrl,
-    siteName: "Nautical Wedding Invitation",
+    siteName: "A.Baso & A.Ampa — Undangan Pernikahan",
     images: [
       {
   url: shareImageUrl,
@@ -49,9 +49,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Nautical Wedding Invitation",
+    title: "A.Baso & A.Ampa — Undangan Pernikahan",
     description:
-    "Undangan pernikahan Andi Baso & Andi Amparita",
+    "Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud berbagi kabar bahagia dalam hidup kami.",
     images: [shareImageUrl],
   },
 };
