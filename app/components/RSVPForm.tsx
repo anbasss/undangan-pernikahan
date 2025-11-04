@@ -1,9 +1,30 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function RSVPForm() {
   const [status, setStatus] = useState<string | null>(null);
-  const [showGiftModal, setShowGiftModal] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const copyResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyResetRef.current) {
+        clearTimeout(copyResetRef.current);
+      }
+    };
+  }, []);
+
+  function onCopyAccount() {
+    navigator.clipboard.writeText("715050405").then(() => {
+      setCopied(true);
+      if (copyResetRef.current) {
+        clearTimeout(copyResetRef.current);
+      }
+      copyResetRef.current = setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {
+      setCopied(false);
+    });
+  }
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -24,17 +45,31 @@ export default function RSVPForm() {
           </div>
           
           {/* Gift Info Section */}
-          <div className="bg-blue-800/30 rounded-lg p-4 border border-blue-200/10">
-            <p className="text-blue-100 text-sm mb-2">
-              Jika tidak sempat hadir, Anda dapat memberikan 
-              <button 
-                type="button"
-                onClick={() => setShowGiftModal(true)}
-                className="text-golden font-semibold underline decoration-[rgba(var(--gold-rgb),0.45)] hover:decoration-[rgba(var(--gold-rgb),0.6)] transition-colors ml-1"
-              >
-                gift
-              </button>
+          <div className="bg-blue-800/30 rounded-lg p-4 border border-blue-200/10 space-y-3">
+            <p className="text-blue-100 text-sm">
+              Jika tidak sempat hadir, Anda dapat berbagi tanda kasih melalui rekening berikut.
             </p>
+            <div className="bg-blue-900/50 rounded-lg border border-blue-200/20 p-4 space-y-3">
+              <div>
+                <p className="text-blue-200 text-xs font-semibold uppercase tracking-wide">Nama Penerima</p>
+                <p className="text-golden font-medium">Andi B. Patau Naga Uleng</p>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-blue-200 text-xs font-semibold uppercase tracking-wide">Nomor Rekening</p>
+                  <p className="text-golden font-mono text-lg">715050405</p>
+                  <p className="text-blue-200/80 text-xs">Bank BNI</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={onCopyAccount}
+                  className="inline-flex items-center justify-center rounded-lg bg-[var(--gold-bright)] px-4 py-2 text-sm font-semibold text-blue-950 shadow hover:bg-[rgba(var(--gold-rgb),0.85)] focus:outline-none focus:ring-2 focus:ring-[rgba(var(--gold-rgb),0.4)] focus:ring-offset-2"
+                >
+                  {copied ? "Tersalin" : "Salin"}
+                </button>
+              </div>
+              
+            </div>
           </div>
           
           <div>
@@ -51,50 +86,6 @@ export default function RSVPForm() {
         </div>
       </form>
 
-      {/* Gift Modal */}
-      {showGiftModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-gradient-to-br from-blue-900/90 to-blue-800/90 backdrop-blur-md rounded-2xl p-6 md:p-8 max-w-md w-full border border-[rgba(var(--gold-rgb),0.35)] shadow-2xl">
-            <div className="text-center">
-              <h3 className="text-2xl font-bold text-golden mb-2 font-serif foil-shimmer">
-                Wedding Gift
-              </h3>
-              <div className="h-px w-16 bg-[rgba(var(--gold-rgb),0.3)] mx-auto mb-6"></div>
-              
-              <div className="space-y-4 text-left">
-                <div className="bg-white/10 rounded-lg p-4 border border-[rgba(var(--gold-rgb),0.25)]">
-                  <p className="text-blue-100 text-sm font-semibold mb-1">Nama Penerima:</p>
-                  <p className="text-golden font-medium">Andi B. Patau Naga Uleng</p>
-                </div>
-                
-                <div className="bg-white/10 rounded-lg p-4 border border-[rgba(var(--gold-rgb),0.25)]">
-                  <p className="text-blue-100 text-sm font-semibold mb-1">Nomor Rekening:</p>
-                  <p className="text-golden font-mono font-medium">715050405</p>
-                  <p className="text-blue-200/80 text-xs mt-1">Bank BNI</p>
-                </div>
-              </div>
-              
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText('715050405');
-                    alert('Nomor rekening berhasil disalin!');
-                  }}
-                  className="flex-1 bg-golden text-blue-950 font-semibold py-2 px-4 rounded-lg transition-colors hover:bg-[rgba(var(--gold-rgb),0.85)]"
-                >
-                  Salin Rekening
-                </button>
-                <button
-                  onClick={() => setShowGiftModal(false)}
-                  className="flex-1 bg-blue-700 hover:bg-blue-600 text-blue-100 font-semibold py-2 px-4 rounded-lg transition-colors"
-                >
-                  Tutup
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
